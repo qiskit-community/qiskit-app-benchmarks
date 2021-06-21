@@ -13,7 +13,7 @@
 # You can set this variable from the command line.
 ASVOPTS =
 
-.PHONY: benchmark
+.PHONY: machine benchmark_dev benchmark
 
 machine:
 	asv machine $(ASVOPTS)
