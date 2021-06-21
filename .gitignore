@@ -1,3 +1,21 @@
+# MacOSX
+.DS_Store
+
+# Dolphin KDE
+.directory
+
+# editor files
+.vscode/
+.idea/
+
+# asv venvs and resulsts
+.asv/
+html/
+qiskit-finance/
+qiskit-machine-learning/
+qiskit-nature/
+qiskit-optimization/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
