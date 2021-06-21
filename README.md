@@ -1,4 +1,6 @@
-# Qiskit Applications Benchmarks
+# Qiskit Application Benchmarks
+
+[![License](https://img.shields.io/github/license/Qiskit/qiskit-app-benchmarks.svg?style=popout-square)](https://opensource.org/licenses/Apache-2.0)[![Build Status](https://github.com/Qiskit/qiskit-app-benchmarks/workflows/Application%20Benchmarks%20Tests/badge.svg?branch=main)](https://github.com/Qiskit/qiskit-app-benchmarks/actions?query=workflow%3A"Application%20Benchmarks%20Tests"+branch%3Amain+event%3Apush)
 
 ## Usage
 
@@ -29,12 +31,12 @@ For questions that are more suited for a forum, we use the **Qiskit** tag in [St
 
 ## Authors and Citation
 
-Applications Benchmarks were inspired, authored and brought about by the collective work of a team of researchers.
-Applications Benchmarks continues to grow with the help and work of
+Application Benchmarks were inspired, authored and brought about by the collective work of a team of researchers.
+Application Benchmarks continues to grow with the help and work of
 [many people](https://github.com/Qiskit/qiskit-app-benchmarks/graphs/contributors), who contribute
 to the project at different levels.
 If you use Qiskit, please cite as per the provided
-[BibTeX file](https://githuzb.com/Qiskit/qiskit/blob/main/Qiskit.bib).
+[BibTeX file](https://github.com/Qiskit/qiskit/blob/master/Qiskit.bib).
 
 Please note that if you do not like the way your name is cited in the BibTex file then consult
 the information found in the [.mailmap](https://github.com/Qiskit/qiskit-app-benchmarks/blob/main/.mailmap)
