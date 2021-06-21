@@ -30,7 +30,7 @@ from qiskit_optimization.converters import QuadraticProgramToQubo
 
 
 class MaxcutBenchmarks:
-    """Maxcute benchmarks"""
+    """Maxcut benchmarks"""
 
     params = ([2, 4, 8, 12], [3, 5, 7, 9])
     param_names = ["number of nodes", "degree"]
