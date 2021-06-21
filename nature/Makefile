@@ -11,9 +11,15 @@
 # that they have been altered from the originals.
 
 # You can set this variable from the command line.
-ASVOPTS    =
+ASVOPTS =
 
 .PHONY: benchmark
+
+machine:
+	asv machine $(ASVOPTS)
+
+benchmark_dev:
+	asv dev $(ASVOPTS)
 
 benchmark:
 	asv run $(ASVOPTS)

@@ -10,16 +10,17 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-# You can set this variable from the command line.
-ASVOPTS =
-
-.PHONY: benchmark
-
-machine:
-	asv machine $(ASVOPTS)
-
-benchmark_dev:
-	asv dev $(ASVOPTS)
-
-benchmark:
-	asv run $(ASVOPTS)
+name: 'Install Libraries'
+description: 'Installs Python and Binary Libraries'
+inputs:
+  python-version:
+    description: 'Python version'
+    required: true
+runs:
+  using: "composite"
+  steps: 
+    - run : |
+        pip install -U pip
+        pip install -U setuptools wheel
+        pip install -U -r requirements-dev.txt
+      shell: bash

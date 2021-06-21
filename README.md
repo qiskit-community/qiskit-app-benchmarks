@@ -2,12 +2,16 @@
 
 ## Usage
 
-In order to run all benchmarks, just run`make all`. Otherwise:
+In order to run benchmarks, run:
 
-* Finance: `make finance`
-* Machine Learning: `make ml`
-* Optimization: `make optimization`
-* Nature: `make nature`
+* Finance: `make benchmark TARGET=finance`
+* Machine Learning: `make benchmark TARGET=machine_learning`
+* Optimization: `make benchmark TARGET=optimization`
+* Nature: `make benchmark TARGET=nature`
+
+Before any benchmarking, you need to set once your machine info.
+If you accept defaults, for finance for instance, run `make machine TARGET=finance ASVOPTS=--yes`
+Another option is to run in development mode as a validation: `run benchmark_dev TARGET=machine_learning`
 
 ----------------------------------------------------------------------------------------------------
 

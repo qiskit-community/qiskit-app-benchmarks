@@ -11,23 +11,19 @@
 # that they have been altered from the originals.
 
 # You can set this variable from the command line.
-ASVOPTS    =
+TARGET  =
+ASVOPTS =
 
-.PHONY: finance machine_learning nature optimization lint mypy style black spell
+.PHONY: machine benchmark_dev benchmark lint mypy style black spell copyright
 
-all: finance machine_learning nature optimization
+machine:
+	make -C $(TARGET) machine ASVOPTS=$(ASVOPTS)
 
-finance:
-	make -C finance benchmark ASVOPTS=$(ASVOPTS)
+benchmark_dev:
+	make -C $(TARGET) benchmark_dev ASVOPTS=$(ASVOPTS)
 
-ml:
-	make -C machine_learning benchmark ASVOPTS=$(ASVOPTS)
-
-nature:
-	make -C nature benchmark ASVOPTS=$(ASVOPTS)
-
-optimization:
-	make -C optimization benchmark ASVOPTS=$(ASVOPTS)
+benchmark:
+	make -C $(TARGET) benchmark ASVOPTS=$(ASVOPTS)
 
 lint:
 	pylint -rn finance machine_learning nature optimization tools
