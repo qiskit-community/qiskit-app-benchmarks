@@ -13,13 +13,19 @@
 # You can set this variable from the command line.
 ASVOPTS =
 
-.PHONY: machine benchmark_dev benchmark
+.PHONY: machine dev run publish preview
 
 machine:
 	asv machine $(ASVOPTS)
 
-benchmark_dev:
+dev:
 	asv dev $(ASVOPTS)
 
-benchmark:
+run:
 	asv run $(ASVOPTS)
+
+publish:
+	asv publish $(ASVOPTS)
+
+preview:
+	asv preview $(ASVOPTS)
