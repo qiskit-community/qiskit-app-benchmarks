@@ -63,6 +63,21 @@ jobs:
       - run:  make style
         if: ${{ !cancelled() }}
         shell: bash
+      - name: Run make html
+        run: |
+          make clean_sphinx
+          make html SPHINXOPTS=-W
+          cd docs/_build/html
+          mkdir artifacts
+          tar -zcvf artifacts/documentation.tar.gz --exclude=./artifacts .
+        if: ${{ !cancelled() }}
+        shell: bash
+      - name: Run upload documentation
+        uses: actions/upload-artifact@v2
+        with:
+          name: documentation
+          path: docs/_build/html/artifacts/documentation.tar.gz
+        if: ${{ !cancelled() }}
   Lint:
     runs-on: ubuntu-latest
     strategy:
@@ -90,7 +105,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -104,24 +119,24 @@ jobs:
       - uses: ./.github/actions/install-applications
       - name:  Finance Benchmarks
         run: |
-          make machine TARGET=finance ASVOPTS=--yes
-          make dev TARGET=finance || true
+          make asv TARGET=finance ASVCMD=machine ASVOPTS=--yes
+          make asv TARGET=finance ASVCMD=dev
         shell: bash
       - name: Machine Learning Benchmarks
         run: |
-          make machine TARGET=machine_learning ASVOPTS=--yes
-          make dev TARGET=machine_learning || true
+          make asv TARGET=machine_learning ASVCMD=machine ASVOPTS=--yes
+          make asv TARGET=machine_learning ASVCMD=dev
         if: ${{ !cancelled() }}
         shell: bash
       - name: Nature
         run: |
-          make machine TARGET=nature ASVOPTS=--yes
-          make dev TARGET=nature || true
+          make asv TARGET=nature ASVCMD=machine ASVOPTS=--yes
+          make asv TARGET=nature ASVCMD=dev
         if: ${{ !cancelled() }}
         shell: bash
       - name: Optimization
         run: |
-          make machine TARGET=optimization ASVOPTS=--yes
-          make dev TARGET=optimization
+          make asv TARGET=optimization ASVCMD=machine ASVOPTS=--yes
+          make asv TARGET=optimization ASVCMD=dev
         if: ${{ !cancelled() }}
         shell: bash

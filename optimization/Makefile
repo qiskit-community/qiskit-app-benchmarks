@@ -10,22 +10,11 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-# You can set this variable from the command line.
+# You can set those variables from the command line.
+ASVCMD  =
 ASVOPTS =
 
-.PHONY: machine dev run publish preview
+.PHONY: asv machine dev run publish preview
 
-machine:
-	asv machine $(ASVOPTS)
-
-dev:
-	asv dev $(ASVOPTS)
-
-run:
-	asv run $(ASVOPTS)
-
-publish:
-	asv publish $(ASVOPTS)
-
-preview:
-	asv preview $(ASVOPTS)
+asv:
+	python -m asv $(ASVCMD) $(ASVOPTS) || true

@@ -6,14 +6,18 @@
 
 In order to run benchmarks, run:
 
-* Finance: `make run TARGET=finance`
-* Machine Learning: `make run TARGET=machine_learning`
-* Optimization: `make run TARGET=optimization`
-* Nature: `make run TARGET=nature`
+* Finance: `make asv TARGET=finance ASVCMD=run`
+* Machine Learning: `make asv TARGET=machine_learning ASVCMD=run`
+* Optimization: `make asv TARGET=optimization ASVCMD=run`
+* Nature: `make asv TARGET=nature ASVCMD=run`
 
 Before any benchmarking, you need to set once your machine info.
-If you accept defaults, for finance for instance, run `make machine TARGET=finance ASVOPTS=--yes`
-Another option is to run in development mode as a validation: `run dev TARGET=machine_learning`
+If you accept defaults, for finance for instance, run `make asv TARGET=finance ASVCMD=machine ASVOPTS=--yes`
+Another option is to run in development mode as a validation: `make asv TARGET=machine_learning ASVCMD=dev`
+
+Documentation for asv can be found at [ASV Documentation](https://asv.readthedocs.io/en/stable/)
+
+The benchmark results can be found at [ASV Results](https://qiskit.github.io/qiskit-app-benchmarks/)
 
 ----------------------------------------------------------------------------------------------------
 
