@@ -14,16 +14,22 @@
 TARGET  =
 ASVOPTS =
 
-.PHONY: machine benchmark_dev benchmark lint mypy style black spell copyright
+.PHONY: machine dev run publish preview lint mypy style black spell copyright
 
 machine:
 	make -C $(TARGET) machine ASVOPTS=$(ASVOPTS)
 
-benchmark_dev:
-	make -C $(TARGET) benchmark_dev ASVOPTS=$(ASVOPTS)
+dev:
+	make -C $(TARGET) dev ASVOPTS=$(ASVOPTS)
 
-benchmark:
-	make -C $(TARGET) benchmark ASVOPTS=$(ASVOPTS)
+run:
+	make -C $(TARGET) run ASVOPTS=$(ASVOPTS)
+
+publish:
+	make -C $(TARGET) publish ASVOPTS=$(ASVOPTS)
+
+preview:
+	make -C $(TARGET) preview ASVOPTS=$(ASVOPTS)
 
 lint:
 	pylint -rn finance machine_learning nature optimization tools
