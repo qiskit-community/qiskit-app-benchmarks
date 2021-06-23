@@ -10,41 +10,40 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-# You can set this variable from the command line.
+# You can set those variables from the command line.
 TARGET  =
+ASVCMD  =
 ASVOPTS =
+SPHINXOPTS =
 
-.PHONY: machine dev run publish preview lint mypy style black spell copyright
+.PHONY: asv lint mypy style black spell copyright html clean_sphinx clean
 
-machine:
-	make -C $(TARGET) machine ASVOPTS=$(ASVOPTS)
-
-dev:
-	make -C $(TARGET) dev ASVOPTS=$(ASVOPTS)
-
-run:
-	make -C $(TARGET) run ASVOPTS=$(ASVOPTS)
-
-publish:
-	make -C $(TARGET) publish ASVOPTS=$(ASVOPTS)
-
-preview:
-	make -C $(TARGET) preview ASVOPTS=$(ASVOPTS)
+asv:
+	make -C $(TARGET) asv ASVCMD=$(ASVCMD) ASVOPTS="$(ASVOPTS)"
 
 lint:
-	pylint -rn finance machine_learning nature optimization tools
+	python -m pylint -rn finance machine_learning nature optimization tools
 
 mypy:
-	mypy finance machine_learning nature optimization tools
+	python -m mypy finance machine_learning nature optimization tools
 
 style:
-	black --check finance machine_learning nature optimization tools
+	python -m black --check finance machine_learning nature optimization tools
 
 black:
-	black finance machine_learning nature optimization tools
+	python -m black finance machine_learning nature optimization tools
 
 spell:
-	pylint -rn --disable=all --enable=spelling --spelling-dict=en_US --spelling-private-dict-file=.pylintdict finance machine_learning nature optimization tools
+	python -m pylint -rn --disable=all --enable=spelling --spelling-dict=en_US --spelling-private-dict-file=.pylintdict finance machine_learning nature optimization tools
+	make -C docs spell SPHINXOPTS=$(SPHINXOPTS)
 
 copyright:
 	python tools/check_copyright.py
+
+html:
+	make -C docs html SPHINXOPTS=$(SPHINXOPTS)
+
+clean_sphinx:
+	make -C docs clean
+
+clean: clean_sphinx

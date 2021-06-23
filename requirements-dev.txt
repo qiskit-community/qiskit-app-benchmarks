@@ -1,6 +1,8 @@
 black==21.4b2
 pylint>=2.7.1
 pylintfileheader>=0.0.2
+Sphinx>=1.8.3,!=3.1.0
+sphinxcontrib-spelling
 mypy>=0.780
 mypy-extensions>=0.4.3
 asv
