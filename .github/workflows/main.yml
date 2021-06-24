@@ -16,11 +16,9 @@ on:
   push:
     branches:
       - main
-      - 'stable/**'
   pull_request:
     branches:
       - main
-      - 'stable/**'
   schedule:
     # run every day at 1AM
     - cron: '0 1 * * *'
@@ -119,24 +117,32 @@ jobs:
       - uses: ./.github/actions/install-applications
       - name:  Finance Benchmarks
         run: |
-          make asv TARGET=finance ASVCMD=machine ASVOPTS=--yes
-          make asv TARGET=finance ASVCMD=dev
+          pushd finance
+          asv machine --yes
+          asv dev || true
+          popd
         shell: bash
       - name: Machine Learning Benchmarks
         run: |
-          make asv TARGET=machine_learning ASVCMD=machine ASVOPTS=--yes
-          make asv TARGET=machine_learning ASVCMD=dev
+          pushd machine_learning
+          asv machine --yes
+          asv dev || true
+          popd
         if: ${{ !cancelled() }}
         shell: bash
       - name: Nature
         run: |
-          make asv TARGET=nature ASVCMD=machine ASVOPTS=--yes
-          make asv TARGET=nature ASVCMD=dev
+          pushd nature
+          asv machine --yes
+          asv dev || true
+          popd
         if: ${{ !cancelled() }}
         shell: bash
       - name: Optimization
         run: |
-          make asv TARGET=optimization ASVCMD=machine ASVOPTS=--yes
-          make asv TARGET=optimization ASVCMD=dev
+          pushd optimization
+          asv machine --yes
+          asv dev
+          popd
         if: ${{ !cancelled() }}
         shell: bash
