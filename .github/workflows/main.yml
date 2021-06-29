@@ -79,6 +79,7 @@ jobs:
   Lint:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.6, 3.7, 3.8, 3.9]
     steps:
@@ -125,7 +126,6 @@ jobs:
       - name: Machine Learning Benchmarks
         run: |
           pushd machine_learning
-          asv machine --yes
           asv dev || true
           popd
         if: ${{ !cancelled() }}
@@ -133,7 +133,6 @@ jobs:
       - name: Nature
         run: |
           pushd nature
-          asv machine --yes
           asv dev || true
           popd
         if: ${{ !cancelled() }}
@@ -141,7 +140,6 @@ jobs:
       - name: Optimization
         run: |
           pushd optimization
-          asv machine --yes
           asv dev
           popd
         if: ${{ !cancelled() }}

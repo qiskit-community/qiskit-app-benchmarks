@@ -4,6 +4,8 @@ grover
 html
 init
 maxcut
+pxd
+py
 qiskit
 qaoa
 qubo

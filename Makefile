@@ -22,19 +22,20 @@ asv:
 	make -C $(TARGET) asv ASVCMD=$(ASVCMD) ASVOPTS="$(ASVOPTS)"
 
 lint:
-	python -m pylint -rn finance machine_learning nature optimization tools
+	python -m pylint -rn --ignore=.asv finance machine_learning nature optimization tools
+	python tools/verify_headers.py finance machine_learning nature optimization tools
 
 mypy:
 	python -m mypy finance machine_learning nature optimization tools
 
 style:
-	python -m black --check finance machine_learning nature optimization tools
+	python -m black --check --exclude=".asv" finance machine_learning nature optimization tools
 
 black:
-	python -m black finance machine_learning nature optimization tools
+	python -m black --exclude=".asv" finance machine_learning nature optimization tools
 
 spell:
-	python -m pylint -rn --disable=all --enable=spelling --spelling-dict=en_US --spelling-private-dict-file=.pylintdict finance machine_learning nature optimization tools
+	python -m pylint -rn --disable=all --enable=spelling --spelling-dict=en_US --spelling-private-dict-file=.pylintdict --ignore=.asv finance machine_learning nature optimization tools
 	make -C docs spell SPHINXOPTS=$(SPHINXOPTS)
 
 copyright:
