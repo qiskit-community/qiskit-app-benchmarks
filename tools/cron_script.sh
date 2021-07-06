@@ -22,9 +22,8 @@ fi
 echo 'Start script ...'
 touch /tmp/benchmark.lock
 
-cat > /tmp/.git-askpass <<EOF
-$1
-EOF
+echo "echo $3" > /tmp/.git-askpass
+chmod +x /tmp/.git-askpass
 export GIT_ASKPASS=/tmp/.git-askpass
 
 source /opt/benchmark/bin/activate
@@ -36,7 +35,8 @@ echo 'qiskit-app-benchmarks has a gh-pages branch with the html contents in it'
 if [ -d /tmp/qiskit-app-benchmarks ]; then
   rm -rf /tmp/qiskit-app-benchmarks
 fi
-git clone https://qiskit-asv-bot@github.com/Qiskit/qiskit-app-benchmarks.git /tmp/qiskit-app-benchmarks
+
+git clone https://$2@github.com/$1/qiskit-app-benchmarks.git /tmp/qiskit-app-benchmarks
 
 git pull
 make clean_sphinx
@@ -73,6 +73,7 @@ do
     date
     echo "Run Benchmark for domain $target"
     asv run --launch-method spawn --record-samples NEW
+    # asv run --quick
     date
     asv publish
     rm -rf /tmp/qiskit-app-benchmarks/$target/*
