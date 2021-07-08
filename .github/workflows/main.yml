@@ -37,11 +37,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: ./.github/actions/install-libraries
-        with:
-          python-version: ${{ matrix.python-version }}
-      - uses: ./.github/actions/install-main-dependencies
-        if: ${{ !startsWith(github.ref, 'refs/heads/stable') && !startsWith(github.base_ref, 'stable/') }}
-      - uses: ./.github/actions/install-applications
       - name: Install Dependencies
         run: |
           sudo apt-get -y install pandoc graphviz
@@ -88,10 +83,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: ./.github/actions/install-libraries
-        with:
-          python-version: ${{ matrix.python-version }}
       - uses: ./.github/actions/install-main-dependencies
-        if: ${{ !startsWith(github.ref, 'refs/heads/stable') && !startsWith(github.base_ref, 'stable/') }}
       - uses: ./.github/actions/install-applications
       - run: make lint
         if: ${{ !cancelled() }}
@@ -111,36 +103,39 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: ./.github/actions/install-libraries
-        with:
-          python-version: ${{ matrix.python-version }}
-      - uses: ./.github/actions/install-main-dependencies
-        if: ${{ !startsWith(github.ref, 'refs/heads/stable') && !startsWith(github.base_ref, 'stable/') }}
-      - uses: ./.github/actions/install-applications
       - name:  Finance Benchmarks
         run: |
           pushd finance
           asv machine --yes
-          asv dev || true
+          if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
+            asv run --quick
+          fi
           popd
         shell: bash
       - name: Machine Learning Benchmarks
         run: |
           pushd machine_learning
-          asv dev || true
+          if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
+            asv run --quick
+          fi
           popd
         if: ${{ !cancelled() }}
         shell: bash
       - name: Nature
         run: |
           pushd nature
-          asv dev || true
+          if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
+            asv run --quick
+          fi
           popd
         if: ${{ !cancelled() }}
         shell: bash
       - name: Optimization
         run: |
           pushd optimization
-          asv dev
+          if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
+            asv run --quick
+          fi
           popd
         if: ${{ !cancelled() }}
         shell: bash
