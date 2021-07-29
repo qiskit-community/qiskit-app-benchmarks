@@ -22,6 +22,20 @@ fi
 echo 'Start script ...'
 touch /tmp/benchmark.lock
 
+# find if asv is installed
+ASV_CMD="asv"
+if command -v $ASV_CMD > /dev/null 2>&1; then
+  echo "asv command is available in known paths."
+else
+  ASV_CMD="/usr/local/bin/asv"
+  if command -v $ASV_CMD > /dev/null 2>&1; then
+    echo "asv command is available at $ASV_CMD"
+  else
+    echo "asv command not found in any known path."
+    exit 1
+  fi
+fi
+
 echo "echo $3" > /tmp/.git-askpass
 chmod +x /tmp/.git-askpass
 export GIT_ASKPASS=/tmp/.git-askpass
@@ -72,8 +86,8 @@ do
   if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
     date
     echo "Run Benchmark for domain $target"
-    asv run --launch-method spawn --record-samples NEW
-    # asv run --quick
+    $ASV_CMD run --launch-method spawn --record-samples NEW
+    # $ASV_CMD run --quick
     date
     asv publish
     rm -rf /tmp/qiskit-app-benchmarks/$target/*
