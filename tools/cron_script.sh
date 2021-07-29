@@ -32,6 +32,7 @@ else
     echo "asv command is available at $ASV_CMD"
   else
     echo "asv command not found in any known path."
+    rm /tmp/benchmark.lock
     exit 1
   fi
 fi
@@ -89,7 +90,7 @@ do
     $ASV_CMD run --launch-method spawn --record-samples NEW
     # $ASV_CMD run --quick
     date
-    asv publish
+    $ASV_CMD publish
     rm -rf /tmp/qiskit-app-benchmarks/$target/*
     cp -r .asv/html/* /tmp/qiskit-app-benchmarks/$target
   else
