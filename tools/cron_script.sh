@@ -15,12 +15,26 @@
 # and has all the qiskit-app-benchmarks requirements-dev.txt
 # dependencies installed
 
-if [[ -f /tmp/benchmark.lock ]] ; then
-    echo 'Script still running, file /tmp/benchmark.lock exists.'
-    exit 0
+# lock file with this file name and containing the pid
+LOCKFILE=/tmp/`basename $0`.lock
+
+if [ -f $LOCKFILE ]; then
+  if ps -p `cat $LOCKFILE` > /dev/null 2>&1; then
+      echo "Script $0 is still running."
+      exit 0
+  fi
 fi
 echo 'Start script ...'
-touch /tmp/benchmark.lock
+echo $$ > $LOCKFILE
+
+# Removes the file if:
+# EXIT - normal termination
+# SIGHUP - termination of the controlling process
+# SIGKILL - immediate program termination
+# SIGINT - program interrupt INTR character
+# SIGQUIT - program interrupt QUIT characte
+# SIGTERM - program termination by kill
+trap 'rm -f "$LOCKFILE" >/dev/null 2>&1' EXIT HUP KILL INT QUIT TERM
 
 # find if asv is installed
 ASV_CMD="asv"
@@ -32,7 +46,6 @@ else
     echo "asv command is available at $ASV_CMD"
   else
     echo "asv command not found in any known path."
-    rm /tmp/benchmark.lock
     exit 1
   fi
 fi
@@ -86,10 +99,15 @@ do
   pushd $target
   if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
     date
-    echo "Run Benchmark for domain $target"
-    $ASV_CMD run --launch-method spawn --record-samples NEW
-    # $ASV_CMD run --quick
+    if [ -z "$ASV_QUICK" ]; then
+      echo "Run Benchmarks for domain $target"
+      $ASV_CMD run --launch-method spawn --record-samples NEW
+    else
+      echo "Run Quick Benchmarks for domain $target"
+      $ASV_CMD run --quick
+    fi
     date
+    echo "Publish Benchmark for domain $target"
     $ASV_CMD publish
     rm -rf /tmp/qiskit-app-benchmarks/$target/*
     cp -r .asv/html/* /tmp/qiskit-app-benchmarks/$target
@@ -105,6 +123,7 @@ do
   if git diff-index --quiet HEAD --; then
     echo "Nothing to push for $target."
   else
+    echo "Push benchmark for $target."
     git commit -m "[Benchmarks $target] Automated documentation update"
     git push origin gh-pages
   fi
@@ -115,5 +134,4 @@ echo 'Final Cleanup'
 unset GIT_ASKPASS
 rm /tmp/.git-askpass
 rm -rf /tmp/qiskit-app-benchmarks
-rm /tmp/benchmark.lock
 echo 'End of script.'
