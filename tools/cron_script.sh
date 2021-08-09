@@ -60,9 +60,8 @@ set -e
 
 echo 'qiskit-app-benchmarks was already cloned in opt and is checkout to main branch'
 echo 'qiskit-app-benchmarks has a gh-pages branch with the html contents in it'
-if [ -d /tmp/qiskit-app-benchmarks ]; then
-  rm -rf /tmp/qiskit-app-benchmarks
-fi
+
+rm -rf /tmp/qiskit-app-benchmarks
 
 git clone https://$2@github.com/$1/qiskit-app-benchmarks.git /tmp/qiskit-app-benchmarks
 
@@ -78,9 +77,21 @@ git config user.email "qiskit@qiskit.org"
 git checkout gh-pages
 GLOBIGNORE=.git:finance:machine_learning:nature:optimization
 rm -rf * .*
-popd
-cp -r docs/_build/html/* /tmp/qiskit-app-benchmarks
 unset GLOBIGNORE
+popd
+
+declare -a targets=("finance" "machine_learning" "nature" "optimization")
+
+# copy base html to benchmarks gh-pages branch
+rm -rf /tmp/qiskit-app-benchmarks-html
+mkdir /tmp/qiskit-app-benchmarks-html
+cp -r docs/_build/html/. /tmp/qiskit-app-benchmarks-html
+for target in "${targets[@]}"
+do
+  rm -rf /tmp/qiskit-app-benchmarks-html/$target
+done
+cp -r /tmp/qiskit-app-benchmarks-html/. /tmp/qiskit-app-benchmarks
+
 
 pushd /tmp/qiskit-app-benchmarks
 git add .
@@ -92,28 +103,31 @@ else
 fi
 popd
 
-declare -a targets=("finance" "machine_learning" "nature" "optimization")
 echo 'Run Benchmarks for domains'
 for target in "${targets[@]}"
 do
   pushd $target
   if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
     date
+    asv_result=0
     if [ -z "$ASV_QUICK" ]; then
       echo "Run Benchmarks for domain $target"
-      $ASV_CMD run --launch-method spawn --record-samples NEW
+      $ASV_CMD run --show-stderr --launch-method spawn --record-samples NEW && asv_result=$? || asv_result=$?
     else
       echo "Run Quick Benchmarks for domain $target"
-      $ASV_CMD run --quick
+      $ASV_CMD run --quick --show-stderr && asv_result=$? || asv_result=$?
     fi
     date
-    echo "Publish Benchmark for domain $target"
-    $ASV_CMD publish
-    rm -rf /tmp/qiskit-app-benchmarks/$target/*
-    cp -r .asv/html/* /tmp/qiskit-app-benchmarks/$target
+    echo "asv command returned $asv_result for domain $target"
+    if [ $asv_result == 0 ]; then
+      echo "Publish Benchmark for domain $target"
+      $ASV_CMD publish
+      rm -rf /tmp/qiskit-app-benchmarks/$target/*
+      cp -r .asv/html/. /tmp/qiskit-app-benchmarks/$target
+    fi
   else
     rm -rf /tmp/qiskit-app-benchmarks/$target/*
-    cp -r ../docs/_build/html/$target/* /tmp/qiskit-app-benchmarks/$target
+    cp -r ../docs/_build/html/$target/. /tmp/qiskit-app-benchmarks/$target
     echo "No Benchmark files found for domain $target, run skipped."
   fi
   popd
@@ -134,4 +148,5 @@ echo 'Final Cleanup'
 unset GIT_ASKPASS
 rm /tmp/.git-askpass
 rm -rf /tmp/qiskit-app-benchmarks
+rm -rf /tmp/qiskit-app-benchmarks-html
 echo 'End of script.'
