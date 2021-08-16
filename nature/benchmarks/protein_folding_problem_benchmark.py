@@ -33,21 +33,27 @@ class ProteinFoldingProblemBenchmarks:
     """Protein Folding Problem benchmarks."""
 
     def __init__(self):
-        self.peptides = {"Neuropeptide": ("APRLRFY", [""] * 7),  #
-                         "NeuropeptideDummySide": ("APRLRFY", ["", "", "R", "", "T", "W", ""]),
-                         # Neuropeptide with dummy side chains
-                         "Angiotensin": ("DRVYIHPFHL", [""] * 10),  # Angiotensin I, human
-                         "AngiotensinDummySide": (
-                             "DRVYIHPFHL",
-                             ["", "", "P", "R", "L", "H", "Y", "", "I", ""],
-                         )}  # Angiotensin I, human with dummy side chains
+        self.peptides = {
+            "Neuropeptide": ("APRLRFY", [""] * 7),  #
+            "NeuropeptideDummySide": ("APRLRFY", ["", "", "R", "", "T", "W", ""]),
+            # Neuropeptide with dummy side chains
+            "Angiotensin": ("DRVYIHPFHL", [""] * 10),  # Angiotensin I, human
+            "AngiotensinDummySide": (
+                "DRVYIHPFHL",
+                ["", "", "P", "R", "L", "H", "Y", "", "I", ""],
+            ),
+        }  # Angiotensin I, human with dummy side chains
 
-        self.interactions = {"MiyazawaJerniganInteraction": MiyazawaJerniganInteraction(),
-                             "RandomInteraction": RandomInteraction(),
-                             "MixedInteraction": MixedInteraction()}
+        self.interactions = {
+            "MiyazawaJerniganInteraction": MiyazawaJerniganInteraction(),
+            "RandomInteraction": RandomInteraction(),
+            "MixedInteraction": MixedInteraction(),
+        }
 
-    params = [["Neuropeptide", "NeuropeptideDummySide", "Angiotensin", "AngiotensinDummySide"],
-              ["MiyazawaJerniganInteraction", "RandomInteraction", "MixedInteraction"]]
+    params = [
+        ["Neuropeptide", "NeuropeptideDummySide", "Angiotensin", "AngiotensinDummySide"],
+        ["MiyazawaJerniganInteraction", "RandomInteraction", "MixedInteraction"],
+    ]
 
     param_names = ["peptide", "interaction type"]
 
