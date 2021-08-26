@@ -97,12 +97,12 @@ class CircuitQNNClassifierBenchmarks:
     def time_fit_circuit_qnn(self, _):
         """Time fitting OpflowQNN to data."""
 
-        self.circuit_classifier.fit(self.X, self.y)
+        self.circuit_classifier.fit(self.X, self.y01)
 
     def time_score_circuit_qnn(self, _):
         """Time scoring OpflowQNN on data."""
 
-        self.circuit_classifier_fitted.score(self.X, self.y)
+        self.circuit_classifier_fitted.score(self.X, self.y01)
 
     def time_predict_circuit_qnn(self, _):
         """Time predicting with OpflowQNN."""
