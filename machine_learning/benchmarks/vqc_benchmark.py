@@ -113,7 +113,7 @@ if __name__ == "__main__":
             bench.setup(backend, optimizer, loss_function)
         except NotImplementedError:
             continue
-        # we ensure the order: fit -> score -> predict
+
         for method in ("time_fit_vqc", "time_score_vqc", "time_predict_vqc"):
             elapsed = timeit(f"bench.{method}(None, None)", number=10, globals=globals())
             print(f"{method}:\t{elapsed}")

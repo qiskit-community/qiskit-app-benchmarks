@@ -96,7 +96,7 @@ if __name__ == "__main__":
             bench.setup(backend, optimizer)
         except NotImplementedError:
             continue
-        # we ensure the order: fit -> score -> predict
+
         for method in (
             "time_fit_opflow_qnn_classifier",
             "time_score_opflow_qnn_classifier",
