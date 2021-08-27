@@ -89,17 +89,17 @@ class VQCBenchmarks:
 
         self.vqc_fitted.fit(self.X, self.y_one_hot)
 
-    def time_fit_vqc(self, _, __):
+    def time_fit_vqc(self, _, __, ___):
         """Time fitting VQC to data."""
 
         self.vqc.fit(self.X, self.y_one_hot)
 
-    def time_score_vqc(self, _, __):
+    def time_score_vqc(self, _, __, ___):
         """Time scoring VQC on data."""
 
         self.vqc_fitted.score(self.X, self.y_one_hot)
 
-    def time_predict_vqc(self, _, __):
+    def time_predict_vqc(self, _, __, ___):
         """Time predicting with VQC."""
 
         y_predict = self.vqc_fitted.predict(self.X)
