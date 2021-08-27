@@ -19,7 +19,7 @@ from qiskit import Aer, QuantumCircuit
 from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
 from qiskit.utils import QuantumInstance, algorithm_globals
 from qiskit.algorithms.optimizers import COBYLA, NELDER_MEAD, L_BFGS_B
-from qiskit_machine_learning.neural_networks import TwoLayerQNN, CircuitQNN
+from qiskit_machine_learning.neural_networks import CircuitQNN
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 
 

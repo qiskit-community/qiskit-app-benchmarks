@@ -15,13 +15,11 @@ from itertools import product
 from timeit import timeit
 
 import numpy as np
-from qiskit import Aer, QuantumCircuit
+from qiskit import Aer
 from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
 from qiskit.utils import QuantumInstance, algorithm_globals
 from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B, NELDER_MEAD
 from qiskit_machine_learning.algorithms import VQC
-from qiskit_machine_learning.neural_networks import TwoLayerQNN, CircuitQNN
-from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
