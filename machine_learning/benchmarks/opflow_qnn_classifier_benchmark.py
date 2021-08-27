@@ -67,6 +67,11 @@ class OpflowQNNClassifierBenchmarks:
             self.opflow_qnn, optimizer=self.optimizers[optimizer_name]
         )
 
+        self.opflow_classifier_fitted = NeuralNetworkClassifier(
+            self.opflow_qnn, optimizer=self.optimizers[optimizer_name]
+        )
+        self.opflow_classifier_fitted.fit(self.X, self.y)
+
     def time_fit_opflow_qnn_classifier(self, _, __):
         """Time fitting OpflowQNN classifier to data."""
 
@@ -75,12 +80,12 @@ class OpflowQNNClassifierBenchmarks:
     def time_score_opflow_qnn_classifier(self, _, __):
         """Time scoring OpflowQNN classifier on data."""
 
-        self.opflow_classifier.score(self.X, self.y)
+        self.opflow_classifier_fitted.score(self.X, self.y)
 
     def time_predict_opflow_qnn_classifier(self, _, __):
         """Time predicting with classifier OpflowQNN."""
 
-        y_predict = self.opflow_classifier.predict(self.X)
+        y_predict = self.opflow_classifier_fitted.predict(self.X)
         return y_predict
 
 

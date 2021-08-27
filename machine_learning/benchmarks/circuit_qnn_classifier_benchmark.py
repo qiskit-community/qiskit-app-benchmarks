@@ -92,6 +92,11 @@ class CircuitQNNClassifierBenchmarks:
             neural_network=self.circuit_qnn, optimizer=self.optimizers[optimizer_name]
         )
 
+        self.circuit_classifier_fitted = NeuralNetworkClassifier(
+            neural_network=self.circuit_qnn, optimizer=self.optimizers[optimizer_name]
+        )
+        self.circuit_classifier_fitted.fit(self.X, self.y01)
+
     def time_fit_circuit_qnn_classifier(self, _, __):
         """Time fitting CircuitQNN classifier to data."""
 
@@ -100,12 +105,12 @@ class CircuitQNNClassifierBenchmarks:
     def time_score_circuit_qnn_classifier(self, _, __):
         """Time scoring CircuitQNN classifier on data."""
 
-        self.circuit_classifier.score(self.X, self.y01)
+        self.circuit_classifier_fitted.score(self.X, self.y01)
 
     def time_predict_circuit_qnn_classifier(self, _, __):
         """Time predicting with CircuitQNN classifier."""
 
-        y_predict = self.circuit_classifier.predict(self.X)
+        y_predict = self.circuit_classifier_fitted.predict(self.X)
         return y_predict
 
 

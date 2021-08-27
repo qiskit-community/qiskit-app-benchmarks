@@ -79,21 +79,31 @@ class VQCBenchmarks:
             quantum_instance=self.backends[quantum_instance_name],
         )
 
+        self.vqc_fitted = VQC(
+            feature_map=feature_map,
+            ansatz=ansatz,
+            loss=loss_name,
+            optimizer=self.optimizers[optimizer_name],
+            quantum_instance=self.backends[quantum_instance_name],
+        )
+
+        self.vqc_fitted.fit(self.X, self.y_one_hot)
+
     def time_fit_vqc(self, _, __):
         """Time fitting VQC to data."""
 
         self.vqc.fit(self.X, self.y_one_hot)
 
-    # def time_score_vqc(self, _, __):
-    #     """Time scoring VQC on data."""
-    #
-    #     self.vqc.score(self.X, self.y_one_hot)
-    #
-    # def time_predict_vqc(self, _, __):
-    #     """Time predicting with VQC."""
-    #
-    #     y_predict = self.vqc.predict(self.X)
-    #     return y_predict
+    def time_score_vqc(self, _, __):
+        """Time scoring VQC on data."""
+
+        self.vqc_fitted.score(self.X, self.y_one_hot)
+
+    def time_predict_vqc(self, _, __):
+        """Time predicting with VQC."""
+
+        y_predict = self.vqc_fitted.predict(self.X)
+        return y_predict
 
 
 if __name__ == "__main__":
