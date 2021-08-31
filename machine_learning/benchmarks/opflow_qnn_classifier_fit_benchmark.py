@@ -15,7 +15,7 @@ from itertools import product
 from timeit import timeit
 
 import numpy as np
-from qiskit.algorithms.optimizers import COBYLA
+from qiskit.algorithms.optimizers import COBYLA, NELDER_MEAD, L_BFGS_B
 from qiskit_machine_learning.neural_networks import TwoLayerQNN
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 
@@ -23,48 +23,49 @@ from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifi
 from .base_classifier_benchmark import BaseClassifierBenchmark
 
 
-class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
+class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
     """Opflow QNN Classifier benchmarks."""
 
-    timeout = 1200.0
-    params = [["dataset_1"], ["qasm_simulator", "statevector_simulator"]]
-    param_names = ["backend name"]
+    def __init__(self):
+        super().__init__()
+        self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
 
-    def setup(self, dataset, quantum_instance_name):
+    timeout = 1200.0
+    params = (
+        ["dataset_1"],
+        ["qasm_simulator", "statevector_simulator"],
+        ["cobyla", "nelder-mead", "l-bfgs-b"],
+    )
+    param_names = ["backend name", "optimizer"]
+
+    def setup(self, dataset, quantum_instance_name, optimizer_name):
         """setup"""
         self.X = self.datasets[dataset]
         num_inputs = len(self.X[0])
         y01 = 1 * (np.sum(self.X, axis=1) >= 0)  # in { 0,  1}
         self.y = 2 * y01 - 1  # in {-1, +1}
+
         opflow_qnn = TwoLayerQNN(num_inputs, quantum_instance=self.backends[quantum_instance_name])
         opflow_qnn.forward(self.X[0, :], np.random.rand(opflow_qnn.num_weights))
 
-        self.opflow_classifier_fitted = NeuralNetworkClassifier(opflow_qnn, optimizer=COBYLA())
-        self.opflow_classifier_fitted.fit(self.X, self.y)
+        self.opflow_classifier = NeuralNetworkClassifier(
+            opflow_qnn, optimizer=self.optimizers[optimizer_name]
+        )
 
-    def time_score_opflow_qnn_classifier(self, _, __):
-        """Time scoring OpflowQNN classifier on data."""
+    def time_fit_opflow_qnn_classifier(self, _, __, ___):
+        """Time fitting OpflowQNN classifier to data."""
 
-        self.opflow_classifier_fitted.score(self.X, self.y)
-
-    def time_predict_opflow_qnn_classifier(self, _, __):
-        """Time predicting with classifier OpflowQNN."""
-
-        y_predict = self.opflow_classifier_fitted.predict(self.X)
-        return y_predict
+        self.opflow_classifier.fit(self.X, self.y)
 
 
 if __name__ == "__main__":
-    for dataset, backend in product(*OpflowQnnClassifierBenchmarks.params):
-        bench = OpflowQnnClassifierBenchmarks()
+    for dataset, backend, optimizer in product(*OpflowQnnFitClassifierBenchmarks.params):
+        bench = OpflowQnnFitClassifierBenchmarks()
         try:
-            bench.setup(dataset, backend)
+            bench.setup(dataset, backend, optimizer)
         except NotImplementedError:
             continue
 
-        for method in (
-            "time_score_opflow_qnn_classifier",
-            "time_predict_opflow_qnn_classifier",
-        ):
-            elapsed = timeit(f"bench.{method}(None, None)", number=10, globals=globals())
+        for method in ["time_fit_opflow_qnn_classifier"]:
+            elapsed = timeit(f"bench.{method}(None, None, None)", number=10, globals=globals())
             print(f"{method}:\t{elapsed}")

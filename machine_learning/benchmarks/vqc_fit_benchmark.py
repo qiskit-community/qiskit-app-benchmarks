@@ -16,21 +16,31 @@ from timeit import timeit
 
 import numpy as np
 from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
-from qiskit.algorithms.optimizers import COBYLA
+from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B, NELDER_MEAD
 from qiskit_machine_learning.algorithms import VQC
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
 from .base_classifier_benchmark import BaseClassifierBenchmark
 
 
-class VqcBenchmarks(BaseClassifierBenchmark):
+class VqcFitBenchmarks(BaseClassifierBenchmark):
     """Variational Quantum Classifier benchmarks."""
 
-    timeout = 1200.0
-    params = [["dataset_1"], ["qasm_simulator", "statevector_simulator"]]
-    param_names = ["backend name"]
+    def __init__(self):
+        super().__init__()
 
-    def setup(self, dataset, quantum_instance_name):
+        self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
+
+    timeout = 1200.0
+    params = (
+        ["dataset_1"],
+        ["qasm_simulator", "statevector_simulator"],
+        ["cobyla", "nelder-mead", "l-bfgs-b"],
+        ["cross_entropy", "squared_error"],
+    )
+    param_names = ["backend name", "optimizer", "loss function"]
+
+    def setup(self, dataset, quantum_instance_name, optimizer_name, loss_name):
         """setup"""
         self.X = self.datasets[dataset]
         num_inputs = len(self.X[0])
@@ -39,41 +49,35 @@ class VqcBenchmarks(BaseClassifierBenchmark):
         self.y_one_hot = np.zeros((num_samples, 2))
         for i in range(num_samples):
             self.y_one_hot[i, y01[i]] = 1
-
         # construct feature map, ansatz, and optimizer
         feature_map = ZZFeatureMap(num_inputs)
         ansatz = RealAmplitudes(num_inputs, reps=1)
+
         # construct variational quantum classifier
-        self.vqc_fitted = VQC(
+        self.vqc = VQC(
             feature_map=feature_map,
             ansatz=ansatz,
-            loss="cross_entropy",
-            optimizer=COBYLA(),
+            loss=loss_name,
+            optimizer=self.optimizers[optimizer_name],
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        self.vqc_fitted.fit(self.X, self.y_one_hot)
+    def time_fit_vqc(self, _, __, ___, ____):
+        """Time fitting VQC to data."""
 
-    def time_score_vqc(self, _, __):
-        """Time scoring VQC on data."""
-
-        self.vqc_fitted.score(self.X, self.y_one_hot)
-
-    def time_predict_vqc(self, _, __):
-        """Time predicting with VQC."""
-
-        y_predict = self.vqc_fitted.predict(self.X)
-        return y_predict
+        self.vqc.fit(self.X, self.y_one_hot)
 
 
 if __name__ == "__main__":
-    for dataset, backend in product(*VqcBenchmarks.params):
-        bench = VqcBenchmarks()
+    for dataset, backend, optimizer, loss_function in product(*VqcFitBenchmarks.params):
+        bench = VqcFitBenchmarks()
         try:
-            bench.setup(dataset, backend)
+            bench.setup(dataset, backend, optimizer, loss_function)
         except NotImplementedError:
             continue
 
-        for method in ("time_score_vqc", "time_predict_vqc"):
-            elapsed = timeit(f"bench.{method}(None, None)", number=10, globals=globals())
+        for method in ["time_fit_vqc"]:
+            elapsed = timeit(
+                f"bench.{method}(None, None, None, None)", number=10, globals=globals()
+            )
             print(f"{method}:\t{elapsed}")

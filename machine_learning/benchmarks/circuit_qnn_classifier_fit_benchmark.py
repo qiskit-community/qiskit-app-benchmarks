@@ -17,7 +17,7 @@ from timeit import timeit
 import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
-from qiskit.algorithms.optimizers import COBYLA
+from qiskit.algorithms.optimizers import COBYLA, NELDER_MEAD, L_BFGS_B
 from qiskit_machine_learning.neural_networks import CircuitQNN
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 
@@ -25,28 +25,29 @@ from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifi
 from .base_classifier_benchmark import BaseClassifierBenchmark
 
 
-class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
+class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
     """Circuit QNN Classifier benchmarks."""
 
     def __init__(self):
         super().__init__()
 
         self.output_shape = 2  # corresponds to the number of classes, possible outcomes of the (
-        # parity) mapping.
+
+        self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
 
     timeout = 1200.0
-    params = [["dataset_1"], ["qasm_simulator", "statevector_simulator"]]
-    param_names = ["backend name"]
+    params = (
+        ["dataset_1"],
+        ["qasm_simulator", "statevector_simulator"],
+        ["cobyla", "nelder-mead", "l-bfgs-b"],
+    )
+    param_names = ["backend name", "optimizer"]
 
-    def setup(self, dataset, quantum_instance_name):
+    def setup(self, dataset, quantum_instance_name, optimizer_name):
         """setup"""
         self.X = self.datasets[dataset]
         num_inputs = len(self.X[0])
         self.y01 = 1 * (np.sum(self.X, axis=1) >= 0)  # in { 0,  1}
-
-        # parity maps bitstrings to 0 or 1
-        def parity(x):
-            return "{:b}".format(x).count("1") % 2
 
         # construct feature map
         feature_map = ZZFeatureMap(num_inputs)
@@ -59,6 +60,10 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         qc.append(feature_map, range(num_inputs))
         qc.append(ansatz, range(num_inputs))
 
+        # parity maps bitstrings to 0 or 1
+        def parity(x):
+            return "{:b}".format(x).count("1") % 2
+
         # construct QNN
         self.circuit_qnn = CircuitQNN(
             circuit=qc,
@@ -69,34 +74,25 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        self.circuit_classifier_fitted = NeuralNetworkClassifier(
-            neural_network=self.circuit_qnn, optimizer=COBYLA()
+        # construct classifier
+        self.circuit_classifier = NeuralNetworkClassifier(
+            neural_network=self.circuit_qnn, optimizer=self.optimizers[optimizer_name]
         )
-        self.circuit_classifier_fitted.fit(self.X, self.y01)
 
-    def time_score_circuit_qnn_classifier(self, _, __):
-        """Time scoring CircuitQNN classifier on data."""
+    def time_fit_circuit_qnn_classifier(self, _, __, ___):
+        """Time fitting CircuitQNN classifier to data."""
 
-        self.circuit_classifier_fitted.score(self.X, self.y01)
-
-    def time_predict_circuit_qnn_classifier(self, _, __):
-        """Time predicting with CircuitQNN classifier."""
-
-        y_predict = self.circuit_classifier_fitted.predict(self.X)
-        return y_predict
+        self.circuit_classifier.fit(self.X, self.y01)
 
 
 if __name__ == "__main__":
-    for dataset, backend in product(*CircuitQnnClassifierBenchmarks.params):
-        bench = CircuitQnnClassifierBenchmarks()
+    for dataset, backend, optimizer in product(*CircuitQnnFitClassifierBenchmarks.params):
+        bench = CircuitQnnFitClassifierBenchmarks()
         try:
-            bench.setup(dataset, backend)
+            bench.setup(dataset, backend, optimizer)
         except NotImplementedError:
             continue
 
-        for method in (
-            "time_score_circuit_qnn_classifier",
-            "time_predict_circuit_qnn_classifier",
-        ):
-            elapsed = timeit(f"bench.{method}(None, None)", number=10, globals=globals())
+        for method in ["time_fit_circuit_qnn_classifier"]:
+            elapsed = timeit(f"bench.{method}(None, None, None)", number=10, globals=globals())
             print(f"{method}:\t{elapsed}")
