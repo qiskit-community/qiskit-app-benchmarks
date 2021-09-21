@@ -62,7 +62,7 @@ class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
 
         # parity maps bitstrings to 0 or 1
         def parity(x):
-            return "{:b}".format(x).count("1") % 2
+            return f"{x:b}".count("1") % 2
 
         # construct QNN
         self.circuit_qnn = CircuitQNN(
