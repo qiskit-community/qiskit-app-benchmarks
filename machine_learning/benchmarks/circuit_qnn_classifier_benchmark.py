@@ -46,7 +46,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
 
         # parity maps bitstrings to 0 or 1
         def parity(x):
-            return "{:b}".format(x).count("1") % 2
+            return f"{x:b}".count("1") % 2
 
         # construct feature map
         feature_map = ZZFeatureMap(num_inputs)
