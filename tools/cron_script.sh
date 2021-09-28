@@ -80,7 +80,7 @@ rm -rf * .*
 unset GLOBIGNORE
 popd
 
-declare -a targets=("finance" "machine_learning" "nature" "optimization")
+declare -a targets=("finance" "nature" "optimization" "machine_learning")
 
 # copy base html to benchmarks gh-pages branch
 rm -rf /tmp/qiskit-app-benchmarks-html
