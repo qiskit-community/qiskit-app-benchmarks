@@ -28,15 +28,16 @@ from .base_classifier_benchmark import BaseClassifierBenchmark
 class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
     """Circuit QNN Classifier benchmarks."""
 
+    version = 1
+    timeout = 1200.0
+    params = [["dataset_1"], ["qasm_simulator", "statevector_simulator"]]
+    param_names = ["backend name"]
+
     def __init__(self):
         super().__init__()
 
         self.output_shape = 2  # corresponds to the number of classes, possible outcomes of the (
         # parity) mapping.
-
-    timeout = 1200.0
-    params = [["dataset_1"], ["qasm_simulator", "statevector_simulator"]]
-    param_names = ["backend name"]
 
     def setup(self, dataset, quantum_instance_name):
         """setup"""

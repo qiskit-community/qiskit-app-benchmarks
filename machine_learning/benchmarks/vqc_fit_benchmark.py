@@ -26,11 +26,7 @@ from .base_classifier_benchmark import BaseClassifierBenchmark
 class VqcFitBenchmarks(BaseClassifierBenchmark):
     """Variational Quantum Classifier benchmarks."""
 
-    def __init__(self):
-        super().__init__()
-
-        self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
-
+    version = 1
     timeout = 1200.0
     params = (
         ["dataset_1"],
@@ -39,6 +35,11 @@ class VqcFitBenchmarks(BaseClassifierBenchmark):
         ["cross_entropy", "squared_error"],
     )
     param_names = ["backend name", "optimizer", "loss function"]
+
+    def __init__(self):
+        super().__init__()
+
+        self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
 
     def setup(self, dataset, quantum_instance_name, optimizer_name, loss_name):
         """setup"""

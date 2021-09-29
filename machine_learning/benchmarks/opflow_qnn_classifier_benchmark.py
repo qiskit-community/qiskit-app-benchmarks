@@ -26,6 +26,7 @@ from .base_classifier_benchmark import BaseClassifierBenchmark
 class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
     """Opflow QNN Classifier benchmarks."""
 
+    version = 1
     timeout = 1200.0
     params = [["dataset_1"], ["qasm_simulator", "statevector_simulator"]]
     param_names = ["backend name"]

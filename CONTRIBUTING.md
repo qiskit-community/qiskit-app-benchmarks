@@ -18,6 +18,9 @@ Code in Qiskit Application Benchmarks should conform to PEP8 and style/lint chec
 this.  Line length must be limited to no more than 100 characters. Docstrings
 should be written using the Google docstring format.
 
+Every Benchmark class should have  a `version` property. If the benchmark class changes in a way that would invalidate previous
+results, the `version` should change in order to reset previous results and start fresh from next commit.
+
 ### Pull request checklist
 
 When submitting a pull request and you feel it is ready for review,
