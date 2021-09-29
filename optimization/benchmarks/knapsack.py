@@ -30,6 +30,7 @@ from qiskit_optimization.converters import QuadraticProgramToQubo
 class KnapsackBenchmarks:
     """Knapsack benchmarks"""
 
+    version = 1
     num_items = [2, 4, 8, 12]
 
     params = ([2, 4, 8, 16], [8, 16, 32, 64])
