@@ -32,6 +32,13 @@ from qiskit_nature.problems.sampling.protein_folding import (
 class ProteinFoldingProblemBenchmarks:
     """Protein Folding Problem benchmarks."""
 
+    version = 1
+    params = [
+        ["Neuropeptide", "NeuropeptideDummySide", "Angiotensin", "AngiotensinDummySide"],
+        ["MiyazawaJerniganInteraction", "RandomInteraction", "MixedInteraction"],
+    ]
+    param_names = ["peptide", "interaction type"]
+
     def __init__(self):
         self.peptides = {
             "Neuropeptide": ("APRLRFY", [""] * 7),  #
@@ -49,13 +56,6 @@ class ProteinFoldingProblemBenchmarks:
             "RandomInteraction": RandomInteraction(),
             "MixedInteraction": MixedInteraction(),
         }
-
-    params = [
-        ["Neuropeptide", "NeuropeptideDummySide", "Angiotensin", "AngiotensinDummySide"],
-        ["MiyazawaJerniganInteraction", "RandomInteraction", "MixedInteraction"],
-    ]
-
-    param_names = ["peptide", "interaction type"]
 
     def setup(self, peptide_id, interaction_id):
         """setup"""

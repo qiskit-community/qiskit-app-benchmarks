@@ -28,13 +28,7 @@ from .base_classifier_benchmark import BaseClassifierBenchmark
 class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
     """Circuit QNN Classifier benchmarks."""
 
-    def __init__(self):
-        super().__init__()
-
-        self.output_shape = 2  # corresponds to the number of classes, possible outcomes of the (
-
-        self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
-
+    version = 1
     timeout = 1200.0
     params = (
         ["dataset_1"],
@@ -42,6 +36,13 @@ class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         ["cobyla", "nelder-mead", "l-bfgs-b"],
     )
     param_names = ["backend name", "optimizer"]
+
+    def __init__(self):
+        super().__init__()
+
+        self.output_shape = 2  # corresponds to the number of classes, possible outcomes of the (
+
+        self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
 
     def setup(self, dataset, quantum_instance_name, optimizer_name):
         """setup"""

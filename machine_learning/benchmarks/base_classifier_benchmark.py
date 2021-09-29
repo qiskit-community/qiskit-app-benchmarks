@@ -9,18 +9,19 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
+
 """Base for Classifier benchmarks."""
+
+from abc import ABC
 import numpy as np
 from qiskit import Aer
 from qiskit.utils import QuantumInstance
 
 
-class BaseClassifierBenchmark:
+class BaseClassifierBenchmark(ABC):
     """Base for Classifier benchmarks."""
 
-    def __init__(
-        self,
-    ):
+    def __init__(self):
 
         quantum_instance_statevector = QuantumInstance(
             Aer.get_backend("statevector_simulator"), shots=1024

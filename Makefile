@@ -24,6 +24,7 @@ asv:
 lint:
 	python -m pylint -rn --ignore=.asv finance machine_learning nature optimization tools
 	python tools/verify_headers.py finance machine_learning nature optimization tools
+	python tools/check_version.py finance machine_learning nature optimization
 
 mypy:
 	python -m mypy finance machine_learning nature optimization tools
