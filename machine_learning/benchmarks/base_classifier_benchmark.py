@@ -94,7 +94,44 @@ class BaseClassifierBenchmark(ABC):
         )
 
         self.dataset_iris_labels = np.array(
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+            [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+            ]
         )
 
-        self.datasets = {"dataset_1": self.dataset_1, "dataset_iris": {"features": self.dataset_iris_features, "labels": self.dataset_iris_labels}}
+        self.datasets = {
+            "dataset_1": self.dataset_1,
+            "dataset_iris": {
+                "features": self.dataset_iris_features,
+                "labels": self.dataset_iris_labels,
+            },
+        }

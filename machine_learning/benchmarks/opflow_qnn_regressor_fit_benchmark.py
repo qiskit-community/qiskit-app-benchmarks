@@ -28,10 +28,7 @@ from .base_regressor_benchmark import BaseRegressorBenchmark
 class OpflowQnnFitRegressorBenchmarks(BaseRegressorBenchmark):
     """Opflow QNN Regressor benchmarks."""
 
-    def __init__(self):
-        super().__init__()
-        self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
-
+    version = 1
     timeout = 1200.0
     params = (
         ["dataset_1"],
@@ -40,23 +37,29 @@ class OpflowQnnFitRegressorBenchmarks(BaseRegressorBenchmark):
     )
     param_names = ["backend name", "optimizer"]
 
+    def __init__(self):
+        super().__init__()
+        self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
+
     def setup(self, dataset, quantum_instance_name, optimizer_name):
         """setup"""
-        self.X = self.datasets[dataset][:,0].reshape(-1,1)
-        self.y = self.datasets[dataset][:,1]
+        self.X = self.datasets[dataset][:, 0].reshape(-1, 1)
+        self.y = self.datasets[dataset][:, 1]
         num_inputs = 1
 
         # construct simple feature map
-        param_x = Parameter('x')
-        feature_map = QuantumCircuit(1, name='fm')
+        param_x = Parameter("x")
+        feature_map = QuantumCircuit(1, name="fm")
         feature_map.ry(param_x, 0)
 
         # construct simple ansatz
-        param_y = Parameter('y')
-        ansatz = QuantumCircuit(1, name='vf')
+        param_y = Parameter("y")
+        ansatz = QuantumCircuit(1, name="vf")
         ansatz.ry(param_y, 0)
 
-        opflow_qnn = TwoLayerQNN(num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name])
+        opflow_qnn = TwoLayerQNN(
+            num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name]
+        )
 
         self.opflow_regressor = NeuralNetworkRegressor(
             opflow_qnn, optimizer=self.optimizers[optimizer_name]

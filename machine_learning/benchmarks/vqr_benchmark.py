@@ -27,23 +27,24 @@ from .base_regressor_benchmark import BaseRegressorBenchmark
 class VqrBenchmarks(BaseRegressorBenchmark):
     """Variational Quantum Regressor benchmarks."""
 
+    version = 1
     timeout = 1200.0
     params = [["dataset_1"], ["qasm_simulator", "statevector_simulator"]]
     param_names = ["backend name"]
 
     def setup(self, dataset, quantum_instance_name):
         """setup"""
-        self.X = self.datasets[dataset][:,0].reshape(-1, 1)
-        self.y = self.datasets[dataset][:,1]
+        self.X = self.datasets[dataset][:, 0].reshape(-1, 1)
+        self.y = self.datasets[dataset][:, 1]
 
         # construct a feature map
-        param_x = Parameter('x')
-        feature_map = QuantumCircuit(1, name='fm')
+        param_x = Parameter("x")
+        feature_map = QuantumCircuit(1, name="fm")
         feature_map.ry(param_x, 0)
 
         # construct an ansatz
-        param_y = Parameter('y')
-        ansatz = QuantumCircuit(1, name='vf')
+        param_y = Parameter("y")
+        ansatz = QuantumCircuit(1, name="vf")
         ansatz.ry(param_y, 0)
 
         # construct variational quantum regressor
