@@ -40,7 +40,7 @@ class KnapsackBenchmarks:
         """setup"""
         seed = 123
         algorithm_globals.random_seed = seed
-        qasm_sim = Aer.get_backend("qasm_simulator")
+        qasm_sim = Aer.get_backend("aer_simulator")
         self._qins = QuantumInstance(
             backend=qasm_sim, shots=1, seed_simulator=seed, seed_transpiler=seed
         )
