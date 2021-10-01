@@ -31,9 +31,7 @@ class KnapsackBenchmarks:
     """Knapsack benchmarks"""
 
     version = 1
-    num_items = [2, 4, 8, 12]
-
-    params = ([2, 4, 8, 16], [8, 16, 32, 64])
+    params = ([2, 3, 4, 5], [4, 6, 8, 10])
     param_names = ["number of items", "max_weights"]
 
     def setup(self, num_items, max_weights):
@@ -44,7 +42,7 @@ class KnapsackBenchmarks:
         self._qins = QuantumInstance(
             backend=qasm_sim, shots=1, seed_simulator=seed, seed_transpiler=seed
         )
-        values = [random.randint(1, 16) for i in range(num_items)]
+        values = [random.randint(1, max_weights) for i in range(num_items)]
         weights = [random.randint(1, max_weights) for i in range(num_items)]
         self._knapsack = Knapsack(values, weights, max_weights)
         self._qp = self._knapsack.to_quadratic_program()
