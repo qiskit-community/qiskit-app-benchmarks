@@ -14,7 +14,6 @@
 from itertools import product
 from timeit import timeit
 
-import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.algorithms.optimizers import L_BFGS_B
 from qiskit.circuit import Parameter

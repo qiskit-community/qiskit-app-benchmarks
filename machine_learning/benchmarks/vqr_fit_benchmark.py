@@ -14,10 +14,8 @@
 from itertools import product
 from timeit import timeit
 
-import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
-from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
 from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B, NELDER_MEAD
 from qiskit_machine_learning.algorithms import VQR
 

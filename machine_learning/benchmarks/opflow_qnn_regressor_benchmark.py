@@ -14,7 +14,6 @@
 from itertools import product
 from timeit import timeit
 
-import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
 from qiskit.algorithms.optimizers import COBYLA
