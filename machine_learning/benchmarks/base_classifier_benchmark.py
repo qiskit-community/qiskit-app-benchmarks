@@ -33,7 +33,7 @@ class BaseClassifierBenchmark(ABC):
             "qasm_simulator": quantum_instance_qasm,
         }
 
-        self.dataset_1 = np.array(
+        self.dataset_1_features = np.array(
             [
                 [0.63332707, 0.05700334],
                 [-0.04218316, -0.74066734],
@@ -55,6 +55,31 @@ class BaseClassifierBenchmark(ABC):
                 [0.96364301, 0.86688318],
                 [-0.50482284, -0.64370197],
                 [-0.41502205, 0.38414452],
+            ]
+        )
+
+        self.dataset_1_labels = np.array(
+            [
+                1,
+                0,
+                1,
+                1,
+                1,
+                1,
+                0,
+                1,
+                1,
+                1,
+                0,
+                1,
+                1,
+                0,
+                1,
+                1,
+                0,
+                1,
+                0,
+                0,
             ]
         )
 
@@ -129,7 +154,7 @@ class BaseClassifierBenchmark(ABC):
         )
 
         self.datasets = {
-            "dataset_1": self.dataset_1,
+            "dataset_1": {"features": self.dataset_1_features, "labels": self.dataset_1_labels},
             "dataset_iris": {
                 "features": self.dataset_iris_features,
                 "labels": self.dataset_iris_labels,

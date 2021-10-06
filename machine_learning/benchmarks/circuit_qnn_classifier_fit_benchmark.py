@@ -46,7 +46,7 @@ class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
 
     def setup(self, dataset, quantum_instance_name, optimizer_name):
         """setup"""
-        self.X = self.datasets[dataset]
+        self.X = self.datasets[dataset]["features"]
         num_inputs = len(self.X[0])
         self.y01 = 1 * (np.sum(self.X, axis=1) >= 0)  # in { 0,  1}
 

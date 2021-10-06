@@ -33,7 +33,7 @@ class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
 
     def setup(self, dataset, quantum_instance_name):
         """setup"""
-        self.X = self.datasets[dataset]
+        self.X = self.datasets[dataset]["features"]
         num_inputs = len(self.X[0])
         y01 = 1 * (np.sum(self.X, axis=1) >= 0)  # in { 0,  1}
         self.y = 2 * y01 - 1  # in {-1, +1}
