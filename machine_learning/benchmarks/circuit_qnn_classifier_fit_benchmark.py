@@ -14,7 +14,6 @@
 from itertools import product
 from timeit import timeit
 
-import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
 from qiskit.algorithms.optimizers import COBYLA, NELDER_MEAD, L_BFGS_B
@@ -48,7 +47,7 @@ class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         """setup"""
         self.X = self.datasets[dataset]["features"]
         num_inputs = len(self.X[0])
-        self.y01 = 1 * (np.sum(self.X, axis=1) >= 0)  # in { 0,  1}
+        self.y01 = self.datasets[dataset]["labels"]
 
         # construct feature map
         feature_map = ZZFeatureMap(num_inputs)

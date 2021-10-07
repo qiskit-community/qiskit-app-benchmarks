@@ -14,7 +14,6 @@
 from itertools import product
 from timeit import timeit
 
-import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
 from qiskit.algorithms.optimizers import COBYLA
@@ -43,7 +42,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         """setup"""
         self.X = self.datasets[dataset]["features"]
         num_inputs = len(self.X[0])
-        self.y01 = 1 * (np.sum(self.X, axis=1) >= 0)  # in { 0,  1}
+        self.y01 = self.datasets[dataset]["labels"]
 
         # parity maps bitstrings to 0 or 1
         def parity(x):

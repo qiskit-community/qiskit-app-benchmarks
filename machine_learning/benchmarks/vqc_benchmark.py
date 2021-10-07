@@ -36,7 +36,7 @@ class VqcBenchmarks(BaseClassifierBenchmark):
         self.X = self.datasets[dataset]["features"]
         num_inputs = len(self.X[0])
         num_samples = len(self.X)
-        y01 = 1 * (np.sum(self.X, axis=1) >= 0)  # in { 0,  1}
+        y01 = self.datasets[dataset]["labels"]
         self.y_one_hot = np.zeros((num_samples, 2))
         for i in range(num_samples):
             self.y_one_hot[i, y01[i]] = 1
