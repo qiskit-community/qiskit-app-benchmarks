@@ -15,6 +15,7 @@ from abc import ABC
 import numpy as np
 from qiskit import Aer
 from qiskit.utils import QuantumInstance
+from sklearn.datasets import load_diabetes
 
 
 class BaseRegressorBenchmark(ABC):
@@ -32,7 +33,7 @@ class BaseRegressorBenchmark(ABC):
             "qasm_simulator": quantum_instance_qasm,
         }
 
-        self.dataset_1 = np.array(
+        self.dataset_1_features = np.array(
             [
                 [-0.85774348, -0.74783684],
                 [2.26973107, 0.82203840],
@@ -56,4 +57,22 @@ class BaseRegressorBenchmark(ABC):
                 [-1.79495492, -1.07527775],
             ],
         )
-        self.datasets = {"dataset_1": self.dataset_1}
+
+        diabetes_features = load_diabetes().data
+        diabetes_labels = load_diabetes().target
+
+        np.random.seed(42)
+        rand_int = np.random.randint(low=0, high=len(diabetes_features) - 1, size=30)
+
+        self.dataset_diabetes_features = diabetes_features[rand_int]
+        self.dataset_diabetes_labels = diabetes_labels[rand_int]
+
+        self.datasets = {
+            "dataset_1": {
+                "features": self.dataset_1_features,
+            },
+            "dataset_diabetes": {
+                "features": self.dataset_diabetes_features,
+                "labels": self.dataset_diabetes_labels,
+            },
+        }

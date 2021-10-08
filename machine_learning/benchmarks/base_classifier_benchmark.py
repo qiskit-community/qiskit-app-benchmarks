@@ -16,6 +16,7 @@ from abc import ABC
 import numpy as np
 from qiskit import Aer
 from qiskit.utils import QuantumInstance
+from sklearn.datasets import load_iris
 
 
 class BaseClassifierBenchmark(ABC):
@@ -83,78 +84,20 @@ class BaseClassifierBenchmark(ABC):
             ]
         )
 
-        self.dataset_iris_features = np.array(
-            [
-                [4.7, 3.2, 1.3, 0.2],
-                [4.9, 3.1, 1.5, 0.1],
-                [5.8, 4.0, 1.2, 0.2],
-                [5.0, 3.0, 1.6, 0.2],
-                [4.8, 3.1, 1.6, 0.2],
-                [5.2, 4.1, 1.5, 0.1],
-                [4.4, 3.0, 1.3, 0.2],
-                [5.0, 3.5, 1.3, 0.3],
-                [4.6, 3.2, 1.4, 0.2],
-                [5.3, 3.7, 1.5, 0.2],
-                [7.0, 3.2, 4.7, 1.4],
-                [5.5, 2.3, 4.0, 1.3],
-                [5.9, 3.0, 4.2, 1.5],
-                [5.9, 3.2, 4.8, 1.8],
-                [6.6, 3.0, 4.4, 1.4],
-                [5.5, 2.4, 3.7, 1.0],
-                [6.7, 3.1, 4.7, 1.5],
-                [6.1, 3.0, 4.6, 1.4],
-                [5.7, 2.9, 4.2, 1.3],
-                [5.1, 2.5, 3.0, 1.1],
-                [7.1, 3.0, 5.9, 2.1],
-                [6.5, 3.2, 5.1, 2.0],
-                [6.0, 2.2, 5.0, 1.5],
-                [6.1, 3.0, 4.9, 1.8],
-                [7.7, 3.0, 6.1, 2.3],
-                [6.0, 3.0, 4.8, 1.8],
-                [5.8, 2.7, 5.1, 1.9],
-                [6.7, 3.0, 5.2, 2.3],
-                [6.2, 3.4, 5.4, 2.3],
-                [5.9, 3.0, 5.1, 1.8],
-            ]
-        )
+        iris_features = load_iris().data
+        iris_labels = load_iris().target
 
-        self.dataset_iris_labels = np.array(
-            [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                2,
-                2,
-                2,
-                2,
-                2,
-                2,
-                2,
-                2,
-                2,
-                2,
-            ]
-        )
+        np.random.seed(42)
+        rand_int = np.random.randint(low=0, high=len(iris_features) - 1, size=30)
+
+        self.dataset_iris_features = iris_features[rand_int]
+        self.dataset_iris_labels = iris_labels[rand_int]
 
         self.datasets = {
-            "dataset_1": {"features": self.dataset_1_features, "labels": self.dataset_1_labels},
+            "dataset_1": {
+                "features": self.dataset_1_features,
+                "labels": self.dataset_1_labels,
+            },
             "dataset_iris": {
                 "features": self.dataset_iris_features,
                 "labels": self.dataset_iris_labels,
