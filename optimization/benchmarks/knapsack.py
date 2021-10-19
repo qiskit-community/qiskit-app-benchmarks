@@ -77,7 +77,7 @@ class KnapsackBenchmarks:
     def time_grover(self, _, __):
         """time grover"""
         meo = GroverOptimizer(
-            num_value_qubits=self._qp.get_num_vars() // 2,
+            num_value_qubits=self._qp.get_num_vars(),
             num_iterations=1,
             quantum_instance=self._qins,
         )
