@@ -58,8 +58,8 @@ class BaseRegressorBenchmark(ABC):
             ],
         )
 
-        diabetes_features = load_diabetes().data
-        diabetes_labels = load_diabetes().target
+        diabetes_features = load_diabetes()["data"]
+        diabetes_labels = load_diabetes()["target"]
 
         np.random.seed(42)
         rand_int = np.random.randint(low=0, high=len(diabetes_features) - 1, size=30)

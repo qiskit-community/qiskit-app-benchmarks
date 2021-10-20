@@ -84,11 +84,11 @@ class BaseClassifierBenchmark(ABC):
             ]
         )
 
-        iris_features = load_iris().data
-        iris_labels = load_iris().target
+        iris_features = load_iris()["data"]
+        iris_labels = load_iris()["target"]
 
         np.random.seed(42)
-        rand_int = np.random.randint(low=0, high=len(iris_features) - 1, size=30)
+        rand_int = np.random.randint(low=0, high=len(iris_features) - 1, size=35)
 
         self.dataset_iris_features = iris_features[rand_int]
         self.dataset_iris_labels = iris_labels[rand_int]
