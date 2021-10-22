@@ -41,9 +41,9 @@ class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
 
     def setup(self, dataset, quantum_instance_name, optimizer_name):
         """setup"""
-        self.X = self.datasets[dataset]["features"]
+        self.X = self.datasets[dataset]
         num_inputs = len(self.X[0])
-        y01 = self.datasets[dataset]["labels"]
+        y01 = 1 * (np.sum(self.X, axis=1) >= 0)  # in { 0,  1}
         self.y = 2 * y01 - 1  # in {-1, +1}
 
         opflow_qnn = TwoLayerQNN(num_inputs, quantum_instance=self.backends[quantum_instance_name])

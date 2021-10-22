@@ -16,7 +16,6 @@ from abc import ABC
 import numpy as np
 from qiskit import Aer
 from qiskit.utils import QuantumInstance
-from sklearn.datasets import load_iris
 
 
 class BaseClassifierBenchmark(ABC):
@@ -34,7 +33,7 @@ class BaseClassifierBenchmark(ABC):
             "qasm_simulator": quantum_instance_qasm,
         }
 
-        self.dataset_1_features = np.array(
+        self.dataset_1 = np.array(
             [
                 [0.63332707, 0.05700334],
                 [-0.04218316, -0.74066734],
@@ -58,48 +57,4 @@ class BaseClassifierBenchmark(ABC):
                 [-0.41502205, 0.38414452],
             ]
         )
-
-        self.dataset_1_labels = np.array(
-            [
-                1,
-                0,
-                1,
-                1,
-                1,
-                1,
-                0,
-                1,
-                1,
-                1,
-                0,
-                1,
-                1,
-                0,
-                1,
-                1,
-                0,
-                1,
-                0,
-                0,
-            ]
-        )
-
-        iris_features = load_iris()["data"]
-        iris_labels = load_iris()["target"]
-
-        np.random.seed(42)
-        rand_int = np.random.randint(low=0, high=len(iris_features) - 1, size=35)
-
-        self.dataset_iris_features = iris_features[rand_int]
-        self.dataset_iris_labels = iris_labels[rand_int]
-
-        self.datasets = {
-            "dataset_1": {
-                "features": self.dataset_1_features,
-                "labels": self.dataset_1_labels,
-            },
-            "dataset_iris": {
-                "features": self.dataset_iris_features,
-                "labels": self.dataset_iris_labels,
-            },
-        }
+        self.datasets = {"dataset_1": self.dataset_1}
