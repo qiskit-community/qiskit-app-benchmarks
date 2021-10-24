@@ -12,9 +12,7 @@
 
 """Circuit QNN Classifier score benchmarks."""
 from itertools import product
-from timeit import timeit
-import numpy as np
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 
 from qiskit import QuantumCircuit
@@ -32,7 +30,7 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
 
     version = 1
     timeout = 1200.0
-    params = [["dataset_1"], ["qasm_simulator", "statevector_simulator"]]
+    params = [["dataset_synthetic"], ["qasm_simulator", "statevector_simulator"]]
     param_names = ["backend name"]
 
     def __init__(self):

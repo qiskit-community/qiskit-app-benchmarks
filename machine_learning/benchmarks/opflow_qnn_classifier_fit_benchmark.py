@@ -29,7 +29,7 @@ class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
     version = 1
     timeout = 1200.0
     params = (
-        ["dataset_1"],
+        ["dataset_synthetic"],
         ["qasm_simulator", "statevector_simulator"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
     )

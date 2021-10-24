@@ -35,7 +35,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
     params = [["dataset1", "dataset_iris"], ["qasm_simulator", "statevector_simulator"]]
     param_names = ["backend name"]
 
-    def setup_dataset_1(self, X, y, num_inputs, quantum_instance_name):
+    def setup_dataset_synthetic(self, X, y, num_inputs, quantum_instance_name):
         """Training CircuitQNN function for iris dataset."""
 
         self.output_shape = 2
@@ -120,8 +120,8 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         num_inputs = len(self.X[0])
         self.y01 = self.datasets[dataset]["labels"]
 
-        if dataset == "dataset_1":
-            self.setup_dataset_1(self.X, self.y01, num_inputs, quantum_instance_name)
+        if dataset == "dataset_synthetic":
+            self.setup_dataset_synthetic(self.X, self.y01, num_inputs, quantum_instance_name)
         elif dataset == "dataset_iris":
             self.setup_dataset_iris(self.X, self.y01, quantum_instance_name)
 
