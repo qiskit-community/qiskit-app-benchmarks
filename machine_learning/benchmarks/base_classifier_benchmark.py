@@ -87,8 +87,46 @@ class BaseClassifierBenchmark(ABC):
         iris_features = load_iris()["data"]
         iris_labels = load_iris()["target"]
 
-        self.dataset_iris_features = iris_features[:35]
-        self.dataset_iris_labels = iris_labels[:35]
+        rand_arr = [
+            102,
+            92,
+            14,
+            106,
+            71,
+            20,
+            102,
+            121,
+            74,
+            87,
+            116,
+            99,
+            103,
+            130,
+            52,
+            1,
+            87,
+            37,
+            129,
+            20,
+            57,
+            21,
+            88,
+            48,
+            58,
+            14,
+            50,
+            107,
+            54,
+            63,
+            130,
+            50,
+            134,
+            20,
+            72,
+        ]
+
+        self.dataset_iris_features = iris_features[rand_arr]
+        self.dataset_iris_labels = iris_labels[rand_arr]
 
         self.datasets = {
             "dataset_synthetic": {
