@@ -31,7 +31,7 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
     version = 1
     timeout = 1200.0
     params = [["dataset_synthetic"], ["qasm_simulator", "statevector_simulator"]]
-    param_names = ["backend name"]
+    param_names = ["dataset", "backend name"]
 
     def __init__(self):
         super().__init__()

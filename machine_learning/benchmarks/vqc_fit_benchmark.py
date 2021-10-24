@@ -34,7 +34,7 @@ class VqcFitBenchmarks(BaseClassifierBenchmark):
         ["cobyla", "nelder-mead", "l-bfgs-b"],
         ["cross_entropy", "squared_error"],
     )
-    param_names = ["backend name", "optimizer", "loss function"]
+    param_names = ["dataset", "backend name", "optimizer", "loss function"]
 
     def __init__(self):
         super().__init__()

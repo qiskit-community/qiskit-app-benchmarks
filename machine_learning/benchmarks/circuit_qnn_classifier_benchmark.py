@@ -32,8 +32,8 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
 
     version = 1
     timeout = 1200.0
-    params = [["dataset1", "dataset_iris"], ["qasm_simulator", "statevector_simulator"]]
-    param_names = ["backend name"]
+    params = [["dataset_synthetic", "dataset_iris"], ["qasm_simulator", "statevector_simulator"]]
+    param_names = ["dataset", "backend name"]
 
     def setup_dataset_synthetic(self, X, y, num_inputs, quantum_instance_name):
         """Training CircuitQNN function for iris dataset."""

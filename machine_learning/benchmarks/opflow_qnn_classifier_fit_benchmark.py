@@ -33,7 +33,7 @@ class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         ["qasm_simulator", "statevector_simulator"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
     )
-    param_names = ["backend name", "optimizer"]
+    param_names = ["dataset", "backend name", "optimizer"]
 
     def __init__(self):
         super().__init__()
