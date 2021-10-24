@@ -28,8 +28,8 @@ class VqrBenchmarks(BaseRegressorBenchmark):
 
     version = 1
     timeout = 1200.0
-    params = [["dataset_1"], ["qasm_simulator", "statevector_simulator"]]
-    param_names = ["backend name"]
+    params = [["dataset_synthetic"], ["qasm_simulator", "statevector_simulator"]]
+    param_names = ["dataset", "backend name"]
 
     def setup(self, dataset, quantum_instance_name):
         """setup"""

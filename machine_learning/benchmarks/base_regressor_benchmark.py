@@ -33,7 +33,7 @@ class BaseRegressorBenchmark(ABC):
             "qasm_simulator": quantum_instance_qasm,
         }
 
-        self.dataset_1_features = np.array(
+        self.dataset_synthetic_features = np.array(
             [
                 [-0.85774348, -0.74783684],
                 [2.26973107, 0.82203840],
@@ -61,15 +61,12 @@ class BaseRegressorBenchmark(ABC):
         diabetes_features = load_diabetes()["data"]
         diabetes_labels = load_diabetes()["target"]
 
-        np.random.seed(42)
-        rand_int = np.random.randint(low=0, high=len(diabetes_features) - 1, size=30)
-
-        self.dataset_diabetes_features = diabetes_features[rand_int]
-        self.dataset_diabetes_labels = diabetes_labels[rand_int]
+        self.dataset_diabetes_features = diabetes_features[:35]
+        self.dataset_diabetes_labels = diabetes_labels[:35]
 
         self.datasets = {
-            "dataset_1": {
-                "features": self.dataset_1_features,
+            "dataset_synthetic": {
+                "features": self.dataset_synthetic_features,
             },
             "dataset_diabetes": {
                 "features": self.dataset_diabetes_features,

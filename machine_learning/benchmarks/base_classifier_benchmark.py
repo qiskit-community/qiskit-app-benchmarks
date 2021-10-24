@@ -33,7 +33,7 @@ class BaseClassifierBenchmark(ABC):
             "qasm_simulator": quantum_instance_qasm,
         }
 
-        self.dataset_1 = np.array(
+        self.dataset_synthetic = np.array(
             [
                 [0.63332707, 0.05700334],
                 [-0.04218316, -0.74066734],
@@ -57,4 +57,4 @@ class BaseClassifierBenchmark(ABC):
                 [-0.41502205, 0.38414452],
             ]
         )
-        self.datasets = {"dataset_1": self.dataset_1}
+        self.datasets = {"dataset_synthetic": self.dataset_synthetic}

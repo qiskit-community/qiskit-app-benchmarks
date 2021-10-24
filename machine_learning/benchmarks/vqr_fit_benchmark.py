@@ -29,11 +29,11 @@ class VqrFitBenchmarks(BaseRegressorBenchmark):
     version = 1
     timeout = 1200.0
     params = (
-        ["dataset_1"],
+        ["dataset_synthetic"],
         ["qasm_simulator", "statevector_simulator"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
     )
-    param_names = ["backend name", "optimizer"]
+    param_names = ["dataset", "backend name", "optimizer"]
 
     def __init__(self):
         super().__init__()
