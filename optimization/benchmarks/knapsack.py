@@ -31,17 +31,18 @@ class KnapsackBenchmarks:
     """Knapsack benchmarks"""
 
     version = 1
-    params = ([2, 3, 4, 5], [4, 6, 8, 10])
+    params = ([2, 3, 4, 5], [2, 3, 4, 5])
     param_names = ["number of items", "max_weights"]
 
     def setup(self, num_items, max_weights):
         """setup"""
-        seed = 123
+        seed = 10
         algorithm_globals.random_seed = seed
         qasm_sim = Aer.get_backend("aer_simulator")
         self._qins = QuantumInstance(
             backend=qasm_sim, shots=1, seed_simulator=seed, seed_transpiler=seed
         )
+        random.seed(seed)
         values = [random.randint(1, max_weights) for i in range(num_items)]
         weights = [random.randint(1, max_weights) for i in range(num_items)]
         self._knapsack = Knapsack(values, weights, max_weights)
