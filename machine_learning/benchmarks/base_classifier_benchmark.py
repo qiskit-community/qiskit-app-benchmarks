@@ -13,10 +13,14 @@
 """Base for Classifier benchmarks."""
 
 from abc import ABC
-import numpy as np
 from qiskit import Aer
 from qiskit.utils import QuantumInstance
-from sklearn.datasets import load_iris
+from .datasets import (
+    DATASET_SYNTHETIC_FEATURES,
+    DATASET_SYNTHETIC_LABELS,
+    DATASET_IRIS_FEATURES,
+    DATASET_IRIS_LABELS,
+)
 
 
 class BaseClassifierBenchmark(ABC):
@@ -34,75 +38,13 @@ class BaseClassifierBenchmark(ABC):
             "qasm_simulator": quantum_instance_qasm,
         }
 
-        self.dataset_synthetic_features = np.array(
-            [
-                [0.63332707, 0.05700334],
-                [-0.04218316, -0.74066734],
-                [-0.54731074, 0.6997243],
-                [-0.03254765, 0.68657814],
-                [0.57025591, 0.67333428],
-                [0.32978679, 0.90721741],
-                [0.28112104, -0.52329682],
-                [0.03209235, 0.05112333],
-                [0.46215367, 0.97636782],
-                [0.93945321, 0.09375981],
-                [-0.6546925, 0.1612654],
-                [0.38871208, 0.73535322],
-                [-0.72805702, 0.73124097],
-                [-0.79972062, -0.84444756],
-                [0.87636701, -0.66912929],
-                [-0.08563266, 0.79913683],
-                [0.31805884, -0.84938654],
-                [0.96364301, 0.86688318],
-                [-0.50482284, -0.64370197],
-                [-0.41502205, 0.38414452],
-            ]
-        )
-
-        self.dataset_synthetic_labels = np.array(
-            [
-                1,
-                0,
-                1,
-                1,
-                1,
-                1,
-                0,
-                1,
-                1,
-                1,
-                0,
-                1,
-                1,
-                0,
-                1,
-                1,
-                0,
-                1,
-                0,
-                0,
-            ]
-        )
-
-        iris_features = load_iris()["data"]
-        iris_labels = load_iris()["target"]
-
-        self.dataset_iris_features = []
-        self.dataset_iris_labels = []
-
-        for i in range(35):
-            # there are 50 samples of each class
-            index = 50 * (i % 3) + i
-            self.dataset_iris_features.append(iris_features[index])
-            self.dataset_iris_labels.append(iris_labels[index])
-
         self.datasets = {
             "dataset_synthetic": {
-                "features": self.dataset_synthetic_features,
-                "labels": self.dataset_synthetic_labels,
+                "features": DATASET_SYNTHETIC_FEATURES,
+                "labels": DATASET_SYNTHETIC_LABELS,
             },
             "dataset_iris": {
-                "features": self.dataset_iris_features,
-                "labels": self.dataset_iris_labels,
+                "features": DATASET_IRIS_FEATURES,
+                "labels": DATASET_IRIS_LABELS,
             },
         }
