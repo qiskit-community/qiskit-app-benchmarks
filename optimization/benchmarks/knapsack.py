@@ -43,8 +43,8 @@ class KnapsackBenchmarks:
             backend=qasm_sim, shots=1, seed_simulator=seed, seed_transpiler=seed
         )
         random.seed(seed)
-        values = [random.randint(1, max_weights) for i in range(num_items)]
-        weights = [random.randint(1, max_weights) for i in range(num_items)]
+        values = [random.randint(1, max_weights) for _ in range(num_items)]
+        weights = [random.randint(1, max_weights) for _ in range(num_items)]
         self._knapsack = Knapsack(values, weights, max_weights)
         self._qp = self._knapsack.to_quadratic_program()
 
