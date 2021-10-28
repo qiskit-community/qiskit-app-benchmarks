@@ -31,7 +31,7 @@ class KnapsackBenchmarks:
     """Knapsack benchmarks"""
 
     version = 1
-    params = ([2, 3, 4, 5], [2, 4, 8, 12])
+    params = ([2, 3, 4, 5], [2, 4, 8, 16])
     param_names = ["number of items", "max_weights"]
 
     def setup(self, num_items, max_weights):
