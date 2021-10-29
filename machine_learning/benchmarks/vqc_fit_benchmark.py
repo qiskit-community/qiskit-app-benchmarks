@@ -29,7 +29,7 @@ class VqcFitBenchmarks(BaseClassifierBenchmark):
     version = 1
     timeout = 1200.0
     params = (
-        ["dataset_synthetic"],
+        ["dataset_1"],
         ["qasm_simulator", "statevector_simulator"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
         ["cross_entropy", "squared_error"],
