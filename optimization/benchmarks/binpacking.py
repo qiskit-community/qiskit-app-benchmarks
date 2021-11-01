@@ -43,7 +43,7 @@ class BinPackingBenchmarks:
             backend=qasm_sim, shots=1, seed_simulator=seed, seed_transpiler=seed
         )
         np.random.seed(seed)
-        values = [np.random.randint(1, max_weight // 2) for i in range(num_items)]
+        values = [np.random.randint(1, max_weight) for i in range(num_items)]
         max_number_of_bins = len(values) - 1
         self._bin_packing = BinPacking(values, max_weight, max_number_of_bins)
         self._qp = self._bin_packing.to_quadratic_program()
