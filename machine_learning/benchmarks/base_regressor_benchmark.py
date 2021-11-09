@@ -12,10 +12,14 @@
 """Base for Regressor benchmarks."""
 
 from abc import ABC
-import numpy as np
 from qiskit import Aer
 from qiskit.utils import QuantumInstance
-from sklearn.datasets import load_diabetes
+from .datasets import (
+    DATASET_SYNTHETIC_REGRESSION_FEATURES,
+    DATASET_SYNTHETIC_REGRESSION_LABELS,
+    DATASET_CCPP_FEATURES,
+    DATASET_CCPP_LABELS,
+)
 
 
 class BaseRegressorBenchmark(ABC):
@@ -33,43 +37,10 @@ class BaseRegressorBenchmark(ABC):
             "qasm_simulator": quantum_instance_qasm,
         }
 
-        self.dataset_synthetic_features = np.array(
-            [
-                [-0.85774348, -0.74783684],
-                [2.26973107, 0.82203840],
-                [0.28728974, 0.16437351],
-                [-1.49685228, -1.06793086],
-                [-0.12013558, -0.12098070],
-                [-1.10343779, -0.95175504],
-                [1.42191594, 1.18888902],
-                [1.95396369, 0.94571940],
-                [-2.08711011, -0.71775022],
-                [1.84776896, 0.83823119],
-                [-2.31663345, -0.62089123],
-                [0.41193372, 0.30567915],
-                [-1.59525663, -1.13101328],
-                [2.61017730, 0.47487221],
-                [-3.02161441, -0.20629148],
-                [-0.79122301, -0.89714515],
-                [2.68199945, 0.41766852],
-                [-2.88543292, -0.18996203],
-                [-0.05563549, 0.12252040],
-                [-1.79495492, -1.07527775],
-            ],
-        )
-
-        diabetes_features = load_diabetes()["data"]
-        diabetes_labels = load_diabetes()["target"]
-
-        self.dataset_diabetes_features = diabetes_features[:35]
-        self.dataset_diabetes_labels = diabetes_labels[:35]
-
         self.datasets = {
-            "dataset_synthetic": {
-                "features": self.dataset_synthetic_features,
+            "dataset_synthetic_regression": {
+                "features": DATASET_SYNTHETIC_REGRESSION_FEATURES,
+                "labels": DATASET_SYNTHETIC_REGRESSION_LABELS,
             },
-            "dataset_diabetes": {
-                "features": self.dataset_diabetes_features,
-                "labels": self.dataset_diabetes_labels,
-            },
+            "dataset_ccpp": {"features": DATASET_CCPP_FEATURES, "labels": DATASET_CCPP_LABELS},
         }

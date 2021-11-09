@@ -14,9 +14,9 @@
 from itertools import product
 from timeit import timeit
 
-from qiskit import QuantumCircuit
-from qiskit.algorithms.optimizers import L_BFGS_B
-from qiskit.circuit import Parameter
+from sklearn.preprocessing import MinMaxScaler
+from qiskit.algorithms.optimizers import L_BFGS_B, NELDER_MEAD
+from qiskit.circuit.library import ZFeatureMap, PauliTwoDesign
 from qiskit_machine_learning.algorithms import VQR
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
@@ -28,25 +28,38 @@ class VqrBenchmarks(BaseRegressorBenchmark):
 
     version = 1
     timeout = 1200.0
-    params = [["dataset_synthetic"], ["qasm_simulator", "statevector_simulator"]]
+    params = [
+        ["dataset_synthetic_regression", "dataset_ccpp"],
+        ["qasm_simulator", "statevector_simulator"],
+    ]
     param_names = ["dataset", "backend name"]
 
-    def setup(self, dataset, quantum_instance_name):
-        """setup"""
-        self.X = self.datasets[dataset][:, 0].reshape(-1, 1)
-        self.y = self.datasets[dataset][:, 1]
+    def setup_dataset_synthetic_regression(self, X, y, quantum_instance_name):
+        """Training VQR function for synthetic regression dataset."""
 
-        # construct a feature map
-        param_x = Parameter("x")
-        feature_map = QuantumCircuit(1, name="fm")
-        feature_map.ry(param_x, 0)
-
-        # construct an ansatz
-        param_y = Parameter("y")
-        ansatz = QuantumCircuit(1, name="vf")
-        ansatz.ry(param_y, 0)
+        feature_map = ZFeatureMap(2)
+        ansatz = PauliTwoDesign(2)
 
         # construct variational quantum regressor
+        self.vqr_fitted = VQR(
+            feature_map=feature_map,
+            ansatz=ansatz,
+            optimizer=NELDER_MEAD(),
+            quantum_instance=self.backends[quantum_instance_name],
+        )
+
+        self.vqr_fitted.fit(X, y)
+
+    def setup_dataset_ccpp(self, X, y, quantum_instance_name):
+        """Training VQR for CCPP dataset."""
+
+        scaler = MinMaxScaler((-1, 1))
+        self.X = scaler.fit_transform(X)
+        self.y = scaler.fit_transform(y.reshape(-1, 1))
+
+        feature_map = ZFeatureMap(4)
+        ansatz = PauliTwoDesign(4)
+
         self.vqr_fitted = VQR(
             feature_map=feature_map,
             ansatz=ansatz,
@@ -54,7 +67,19 @@ class VqrBenchmarks(BaseRegressorBenchmark):
             quantum_instance=self.backends[quantum_instance_name],
         )
 
+        # fit regressor
         self.vqr_fitted.fit(self.X, self.y)
+
+    def setup(self, dataset, quantum_instance_name):
+        """setup"""
+
+        self.X = self.datasets[dataset]["features"]
+        self.y = self.datasets[dataset]["labels"]
+
+        if dataset == "dataset_synthetic_regression":
+            self.setup_dataset_synthetic_regression(self.X, self.y, quantum_instance_name)
+        elif dataset == "dataset_ccpp":
+            self.setup_dataset_ccpp(self.X, self.y, quantum_instance_name)
 
     def time_score_vqr(self, _, __):
         """Time scoring VQR on data."""
