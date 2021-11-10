@@ -12,6 +12,7 @@
 
 """Dataset definitions for machine learning benchmarks"""
 
+import pathlib
 import numpy as np
 import pandas as pd
 
@@ -68,7 +69,8 @@ DATASET_SYNTHETIC_REGRESSION_LABELS = np.array(
 
 # Combined Cycle Power Plant Data Set
 # https://archive.ics.uci.edu/ml/datasets/Combined+Cycle+Power+Plant
-ccpp_df = pd.read_csv("CCPP_data.csv")
+abs_path = pathlib.Path(__file__).parent.resolve()
+ccpp_df = pd.read_csv(f"{abs_path}/CCPP_data.csv")
 ccpp_features = ccpp_df[["AT", "V", "AP", "RH"]]
 ccpp_labels = ccpp_df["PE"]
 
