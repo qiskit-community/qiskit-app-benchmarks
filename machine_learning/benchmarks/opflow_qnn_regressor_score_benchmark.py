@@ -63,9 +63,9 @@ class OpflowQnnRegressorScoreBenchmarks(BaseRegressorBenchmark):
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.2)
 
-        num_inputs = 2
-        feature_map = ZFeatureMap(4)
-        ansatz = EfficientSU2(4)
+        num_inputs = 4
+        feature_map = ZFeatureMap(num_inputs)
+        ansatz = EfficientSU2(num_inputs)
 
         opflow_qnn = TwoLayerQNN(
             num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name]

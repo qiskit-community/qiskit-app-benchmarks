@@ -14,11 +14,11 @@
 from itertools import product
 from timeit import timeit
 
-from qiskit import QuantumCircuit
-from qiskit.circuit import Parameter
-from qiskit.algorithms.optimizers import COBYLA
+from qiskit.circuit.library import EfficientSU2, ZFeatureMap
+from qiskit.algorithms.optimizers import L_BFGS_B
 from qiskit_machine_learning.neural_networks import TwoLayerQNN
 from qiskit_machine_learning.algorithms.regressors import NeuralNetworkRegressor
+from sklearn.preprocessing import MinMaxScaler
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
 from .base_regressor_benchmark import BaseRegressorBenchmark
@@ -29,31 +29,54 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
 
     version = 1
     timeout = 1200.0
-    params = [["dataset_synthetic"], ["qasm_simulator", "statevector_simulator"]]
+    params = [
+        ["dataset_synthetic_regression", "dataset_ccpp"],
+        ["qasm_simulator", "statevector_simulator"],
+    ]
     param_names = ["dataset", "backend name"]
 
-    def setup(self, dataset, quantum_instance_name):
-        """setup"""
-        self.X = self.datasets[dataset][:, 0].reshape(-1, 1)
-        self.y = self.datasets[dataset][:, 1]
-        num_inputs = 1
+    def setup_dataset_synthetic_regression(self, quantum_instance_name):
+        """Training Opflow QNN function for synthetic regression dataset."""
 
-        # construct simple feature map
-        param_x = Parameter("x")
-        feature_map = QuantumCircuit(1, name="fm")
-        feature_map.ry(param_x, 0)
-
-        # construct simple ansatz
-        param_y = Parameter("y")
-        ansatz = QuantumCircuit(1, name="vf")
-        ansatz.ry(param_y, 0)
+        num_inputs = 2
+        feature_map = ZFeatureMap(num_inputs)
+        ansatz = EfficientSU2(num_inputs)
 
         opflow_qnn = TwoLayerQNN(
             num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name]
         )
 
-        self.opflow_regressor_fitted = NeuralNetworkRegressor(opflow_qnn, optimizer=COBYLA())
+        self.opflow_regressor_fitted = NeuralNetworkRegressor(opflow_qnn, optimizer=L_BFGS_B())
         self.opflow_regressor_fitted.fit(self.X, self.y)
+
+    def setup_dataset_ccpp(self, X, y, quantum_instance_name):
+        """Training Opflow QNN for CCPP dataset."""
+
+        scaler = MinMaxScaler((-1, 1))
+        X = scaler.fit_transform(X)
+        y = scaler.fit_transform(y.reshape(-1, 1))
+
+        num_inputs = 4
+        feature_map = ZFeatureMap(num_inputs)
+        ansatz = EfficientSU2(num_inputs)
+
+        opflow_qnn = TwoLayerQNN(
+            num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name]
+        )
+
+        self.opflow_regressor_fitted = NeuralNetworkRegressor(opflow_qnn, optimizer=L_BFGS_B())
+        self.opflow_regressor_fitted.fit(self.X, self.y)
+
+    def setup(self, dataset, quantum_instance_name):
+        """setup"""
+
+        self.X = self.datasets[dataset]["features"]
+        self.y = self.datasets[dataset]["labels"]
+
+        if dataset == "dataset_synthetic_regression":
+            self.setup_dataset_synthetic_regression(quantum_instance_name)
+        elif dataset == "dataset_ccpp":
+            self.setup_dataset_ccpp(self.X, self.y, quantum_instance_name)
 
     def time_score_opflow_qnn_regressor(self, _, __):
         """Time scoring OpflowQNN regressor on data."""
