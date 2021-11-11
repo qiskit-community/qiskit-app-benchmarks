@@ -91,7 +91,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         qc.append(ansatz, range(feature_dim))
 
         def three_class(x):
-            return "{:b}".format(x).count("1") % 3
+            return f"{x:b}".count("1") % 3
 
         # construct QNN
         circuit_qnn = CircuitQNN(

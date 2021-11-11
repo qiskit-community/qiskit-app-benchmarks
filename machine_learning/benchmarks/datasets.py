@@ -10,7 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""Dataset definitions for mahcine learning benchmarks."""
+"""Dataset definitions for machine learning benchmarks."""
 
 import numpy as np
 from sklearn.datasets import load_iris
