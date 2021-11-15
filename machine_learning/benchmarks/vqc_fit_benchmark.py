@@ -15,7 +15,7 @@ from itertools import product
 from timeit import timeit
 
 import numpy as np
-from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
+from qiskit.circuit.library import ZFeatureMap, ZZFeatureMap, RealAmplitudes
 from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B, NELDER_MEAD
 from qiskit_machine_learning.algorithms import VQC
 
@@ -29,7 +29,7 @@ class VqcFitBenchmarks(BaseClassifierBenchmark):
     version = 1
     timeout = 1200.0
     params = (
-        ["dataset_synthetic"],
+        ["dataset_synthetic_classification", "dataset_iris"],
         ["qasm_simulator", "statevector_simulator"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
         ["cross_entropy", "squared_error"],
@@ -41,15 +41,17 @@ class VqcFitBenchmarks(BaseClassifierBenchmark):
 
         self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
 
-    def setup(self, dataset, quantum_instance_name, optimizer_name, loss_name):
-        """setup"""
-        self.X = self.datasets[dataset]["features"]
-        num_inputs = len(self.X[0])
-        num_samples = len(self.X)
-        y01 = self.datasets[dataset]["labels"]
-        self.y_one_hot = np.zeros((num_samples, 2))
-        for i in range(num_samples):
-            self.y_one_hot[i, y01[i]] = 1
+    def setup_dataset_synthetic_classification(
+        self, y, quantum_instance_name, optimizer_name, loss_name
+    ):
+        """Training VQC for synthetic classification dataset."""
+
+        num_inputs = 2
+
+        self.y_one_hot = np.zeros((len(y), 2))
+        for i, _ in enumerate(y):
+            self.y_one_hot[i, y[i]] = 1
+
         # construct feature map, ansatz, and optimizer
         feature_map = ZZFeatureMap(num_inputs)
         ansatz = RealAmplitudes(num_inputs, reps=1)
@@ -62,6 +64,40 @@ class VqcFitBenchmarks(BaseClassifierBenchmark):
             optimizer=self.optimizers[optimizer_name],
             quantum_instance=self.backends[quantum_instance_name],
         )
+
+    def setup_dataset_iris(self, y, quantum_instance_name, optimizer_name, loss_name):
+        """Training VQC for iris dataset."""
+
+        num_inputs = 4
+
+        self.y_one_hot = np.zeros((len(y), 3))
+        for i, _ in enumerate(y):
+            self.y_one_hot[i, y[i]] = 1
+
+        # construct feature map, ansatz, and optimizer
+        feature_map = ZFeatureMap(num_inputs)
+        ansatz = RealAmplitudes(num_inputs, reps=1)
+
+        self.vqc = VQC(
+            feature_map=feature_map,
+            ansatz=ansatz,
+            loss=loss_name,
+            optimizer=self.optimizers[optimizer_name],
+            quantum_instance=self.backends[quantum_instance_name],
+        )
+
+    def setup(self, dataset, quantum_instance_name, optimizer_name, loss_name):
+        """setup"""
+
+        self.X = self.datasets[dataset]["features"]
+        self.y = self.datasets[dataset]["labels"]
+
+        if dataset == "dataset_synthetic_classification":
+            self.setup_dataset_synthetic_classification(
+                self.y, quantum_instance_name, optimizer_name, loss_name
+            )
+        elif dataset == "dataset_iris":
+            self.setup_dataset_iris(self.y, quantum_instance_name, optimizer_name, loss_name)
 
     def time_fit_vqc(self, _, __, ___, ____):
         """Time fitting VQC to data."""

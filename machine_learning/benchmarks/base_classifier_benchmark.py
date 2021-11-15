@@ -39,7 +39,7 @@ class BaseClassifierBenchmark(ABC):
         }
 
         self.datasets = {
-            "dataset_synthetic": {
+            "dataset_synthetic_classification": {
                 "features": DATASET_SYNTHETIC_FEATURES,
                 "labels": DATASET_SYNTHETIC_LABELS,
             },
