@@ -19,7 +19,6 @@ from sklearn.preprocessing import MinMaxScaler
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import ZFeatureMap, ZZFeatureMap, RealAmplitudes
 from qiskit.algorithms.optimizers import COBYLA, NELDER_MEAD
-from qiskit.utils import algorithm_globals
 from qiskit_machine_learning.neural_networks import CircuitQNN
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 
@@ -32,7 +31,10 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
 
     version = 1
     timeout = 1200.0
-    params = [["dataset_synthetic", "dataset_iris"], ["qasm_simulator", "statevector_simulator"]]
+    params = [
+        ["dataset_synthetic_classification", "dataset_iris"],
+        ["qasm_simulator", "statevector_simulator"],
+    ]
     param_names = ["dataset", "backend name"]
 
     def setup_dataset_synthetic(self, X, y, num_inputs, quantum_instance_name):
@@ -77,10 +79,10 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
 
         # scaling data
         scaler = MinMaxScaler((-1, 1))
-        features = scaler.fit_transform(X)
+        self.X = scaler.fit_transform(X)
 
         # creating feature map
-        feature_dim = features.shape[1]
+        feature_dim = self.X.shape[1]
         feature_map = ZFeatureMap(feature_dim)
 
         # creating ansatz
@@ -103,12 +105,9 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        initial_point = algorithm_globals.random.random(circuit_qnn.num_weights)
-
         self.circuit_classifier_fitted = NeuralNetworkClassifier(
             neural_network=circuit_qnn,
             optimizer=NELDER_MEAD(maxiter=10),
-            initial_point=initial_point,
         )
 
         self.circuit_classifier_fitted.fit(X, y)
@@ -120,7 +119,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         num_inputs = len(self.X[0])
         self.y01 = self.datasets[dataset]["labels"]
 
-        if dataset == "dataset_synthetic":
+        if dataset == "dataset_synthetic_classification":
             self.setup_dataset_synthetic(self.X, self.y01, num_inputs, quantum_instance_name)
         elif dataset == "dataset_iris":
             self.setup_dataset_iris(self.X, self.y01, quantum_instance_name)

@@ -13,9 +13,10 @@
 """Circuit QNN Classifier benchmarks."""
 from itertools import product
 from timeit import timeit
+from sklearn.preprocessing import MinMaxScaler
 
 from qiskit import QuantumCircuit
-from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
+from qiskit.circuit.library import ZFeatureMap, ZZFeatureMap, RealAmplitudes
 from qiskit.algorithms.optimizers import COBYLA, NELDER_MEAD, L_BFGS_B
 from qiskit_machine_learning.neural_networks import CircuitQNN
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
@@ -30,7 +31,7 @@ class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
     version = 1
     timeout = 1200.0
     params = (
-        ["dataset_synthetic"],
+        ["dataset_synthetic_classification", "dataset_iris"],
         ["qasm_simulator", "statevector_simulator"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
     )
@@ -39,15 +40,16 @@ class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
     def __init__(self):
         super().__init__()
 
-        self.output_shape = 2  # corresponds to the number of classes, possible outcomes of the (
-
         self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
 
-    def setup(self, dataset, quantum_instance_name, optimizer_name):
-        """setup"""
-        self.X = self.datasets[dataset]["features"]
-        num_inputs = len(self.X[0])
-        self.y01 = self.datasets[dataset]["labels"]
+    def setup_dataset_synthetic(self, num_inputs, quantum_instance_name, optimizer_name):
+        """Training CircuitQNN function for iris dataset."""
+
+        self.output_shape = 2
+
+        # parity maps bitstrings to 0 or 1
+        def parity(x):
+            return f"{x:b}".count("1") % 2
 
         # construct feature map
         feature_map = ZZFeatureMap(num_inputs)
@@ -59,10 +61,6 @@ class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         qc = QuantumCircuit(num_inputs)
         qc.append(feature_map, range(num_inputs))
         qc.append(ansatz, range(num_inputs))
-
-        # parity maps bitstrings to 0 or 1
-        def parity(x):
-            return f"{x:b}".count("1") % 2
 
         # construct QNN
         self.circuit_qnn = CircuitQNN(
@@ -78,6 +76,55 @@ class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         self.circuit_classifier = NeuralNetworkClassifier(
             neural_network=self.circuit_qnn, optimizer=self.optimizers[optimizer_name]
         )
+
+    def setup_dataset_iris(self, X, quantum_instance_name, optimizer_name):
+        """Training CircuitQNN function for iris dataset."""
+
+        self.output_shape = 3
+
+        # scaling data
+        scaler = MinMaxScaler((-1, 1))
+        self.X = scaler.fit_transform(X)
+
+        # creating feature map
+        feature_dim = self.X.shape[1]
+        feature_map = ZFeatureMap(feature_dim)
+
+        # creating ansatz
+        ansatz = RealAmplitudes(feature_dim)
+
+        qc = QuantumCircuit(feature_dim)
+        qc.append(feature_map, range(feature_dim))
+        qc.append(ansatz, range(feature_dim))
+
+        def three_class(x):
+            return f"{x:b}".count("1") % 3
+
+        # construct QNN
+        circuit_qnn = CircuitQNN(
+            circuit=qc,
+            input_params=feature_map.parameters,
+            weight_params=ansatz.parameters,
+            interpret=three_class,
+            output_shape=self.output_shape,
+            quantum_instance=self.backends[quantum_instance_name],
+        )
+
+        self.circuit_classifier_fitted = NeuralNetworkClassifier(
+            neural_network=circuit_qnn,
+            optimizer=self.optimizers[optimizer_name],
+        )
+
+    def setup(self, dataset, quantum_instance_name, optimizer_name):
+        """setup"""
+        self.X = self.datasets[dataset]["features"]
+        num_inputs = len(self.X[0])
+        self.y01 = self.datasets[dataset]["labels"]
+
+        if dataset == "dataset_synthetic_classification":
+            self.setup_dataset_synthetic(num_inputs, quantum_instance_name, optimizer_name)
+        elif dataset == "dataset_iris":
+            self.setup_dataset_iris(self.X, quantum_instance_name, optimizer_name)
 
     def time_fit_circuit_qnn_classifier(self, _, __, ___):
         """Time fitting CircuitQNN classifier to data."""
