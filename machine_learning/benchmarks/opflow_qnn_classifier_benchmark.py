@@ -16,6 +16,8 @@ from timeit import timeit
 
 import numpy as np
 from qiskit.algorithms.optimizers import COBYLA
+from qiskit.circuit.library.data_preparation.zz_feature_map import ZZFeatureMap
+from qiskit.circuit.library.n_local.real_amplitudes import RealAmplitudes
 from qiskit_machine_learning.neural_networks import TwoLayerQNN
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 
@@ -28,21 +30,58 @@ class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
 
     version = 1
     timeout = 1200.0
-    params = [["dataset_synthetic"], ["qasm_simulator", "statevector_simulator"]]
+    params = [
+        ["dataset_synthetic_classification", "dataset_iris"],
+        ["qasm_simulator", "statevector_simulator"],
+    ]
     param_names = ["dataset", "backend name"]
 
-    def setup(self, dataset, quantum_instance_name):
-        """setup"""
-        self.X = self.datasets[dataset]["features"]
-        num_inputs = len(self.X[0])
-        y01 = self.datasets[dataset]["labels"]
-        self.y = 2 * y01 - 1  # in {-1, +1}
+    def setup_dataset_synthetic_classification(self, X, y, quantum_instance_name):
+        """Training TwoLayerQNN for synthetic classification dataset."""
+
+        num_inputs = len(X[0])
+        self.y = 2 * y - 1  # in {-1, +1}
 
         opflow_qnn = TwoLayerQNN(num_inputs, quantum_instance=self.backends[quantum_instance_name])
         opflow_qnn.forward(self.X[0, :], np.random.rand(opflow_qnn.num_weights))
 
         self.opflow_classifier_fitted = NeuralNetworkClassifier(opflow_qnn, optimizer=COBYLA())
         self.opflow_classifier_fitted.fit(self.X, self.y)
+
+    def setup_dataset_iris(self, X, y, quantum_instance_name):
+        """Training TwoLayerQNN for iris classification dataset."""
+
+        num_inputs = len(X[0])
+
+        # keeping only two classes as TwoLayerQNN only supports binary classification
+        idx_binary_class = np.where(y != 2)[0]
+        self.X = X[idx_binary_class]
+        self.y = y[idx_binary_class]
+
+        feature_map = ZZFeatureMap(num_inputs)
+        ansatz = RealAmplitudes(num_inputs)
+
+        opflow_qnn = TwoLayerQNN(
+            num_inputs,
+            feature_map=feature_map,
+            ansatz=ansatz,
+            quantum_instance=self.backends[quantum_instance_name],
+        )
+        opflow_qnn.forward(self.X[0, :], np.random.rand(opflow_qnn.num_weights))
+
+        self.opflow_classifier_fitted = NeuralNetworkClassifier(opflow_qnn, optimizer=COBYLA())
+        self.opflow_classifier_fitted.fit(self.X, self.y)
+
+    def setup(self, dataset, quantum_instance_name):
+        """setup"""
+
+        self.X = self.datasets[dataset]["features"]
+        self.y = self.datasets[dataset]["labels"]
+
+        if dataset == "dataset_synthetic_classification":
+            self.setup_dataset_synthetic_classification(self.X, self.y, quantum_instance_name)
+        elif dataset == "dataset_iris":
+            self.setup_dataset_iris(self.X, self.y, quantum_instance_name)
 
     def time_score_opflow_qnn_classifier(self, _, __):
         """Time scoring OpflowQNN classifier on data."""

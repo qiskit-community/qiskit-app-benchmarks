@@ -29,7 +29,7 @@ class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
     version = 1
     timeout = 1200.0
     params = (
-        ["dataset_synthetic"],
+        ["dataset_synthetic_classification", "dataset_iris"],
         ["qasm_simulator", "statevector_simulator"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
     )
@@ -39,12 +39,11 @@ class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         super().__init__()
         self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
 
-    def setup(self, dataset, quantum_instance_name, optimizer_name):
-        """setup"""
-        self.X = self.datasets[dataset]["features"]
-        num_inputs = len(self.X[0])
-        y01 = self.datasets[dataset]["labels"]
-        self.y = 2 * y01 - 1  # in {-1, +1}
+    def setup_dataset_synthetic_classification(self, X, y, quantum_instance_name, optimizer_name):
+        """Training TwoLayerQNN for synthetic classification dataset."""
+
+        num_inputs = len(X[0])
+        self.y = 2 * y - 1  # in {-1, +1}
 
         opflow_qnn = TwoLayerQNN(num_inputs, quantum_instance=self.backends[quantum_instance_name])
         opflow_qnn.forward(self.X[0, :], np.random.rand(opflow_qnn.num_weights))
@@ -52,6 +51,36 @@ class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         self.opflow_classifier = NeuralNetworkClassifier(
             opflow_qnn, optimizer=self.optimizers[optimizer_name]
         )
+
+    def setup_dataset_iris(self, X, y, quantum_instance_name, optimizer_name):
+        """Training TwoLayerQNN for iris classification dataset."""
+
+        num_inputs = len(X[0])
+
+        # keeping only two classes as TwoLayerQNN only supports binary classification
+        idx_binary_class = np.where(y != 2)[0]
+        self.X = X[idx_binary_class]
+        self.y = y[idx_binary_class]
+
+        opflow_qnn = TwoLayerQNN(num_inputs, quantum_instance=self.backends[quantum_instance_name])
+        opflow_qnn.forward(self.X[0, :], np.random.rand(opflow_qnn.num_weights))
+
+        self.opflow_classifier = NeuralNetworkClassifier(
+            opflow_qnn, optimizer=self.optimizers[optimizer_name]
+        )
+
+    def setup(self, dataset, quantum_instance_name, optimizer_name):
+        """setup"""
+
+        self.X = self.datasets[dataset]["features"]
+        self.y = self.datasets[dataset]["labels"]
+
+        if dataset == "dataset_synthetic_classification":
+            self.setup_dataset_synthetic_classification(
+                self.X, self.y, quantum_instance_name, optimizer_name
+            )
+        elif dataset == "dataset_iris":
+            self.setup_dataset_iris(self.X, self.y, quantum_instance_name, optimizer_name)
 
     def time_fit_opflow_qnn_classifier(self, _, __, ___):
         """Time fitting OpflowQNN classifier to data."""
