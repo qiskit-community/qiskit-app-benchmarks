@@ -77,25 +77,20 @@ class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
             neural_network=self.circuit_qnn, optimizer=self.optimizers[optimizer_name]
         )
 
-    def setup_dataset_iris(self, X, quantum_instance_name, optimizer_name):
+    def setup_dataset_iris(self, num_inputs, quantum_instance_name, optimizer_name):
         """Training CircuitQNN function for iris dataset."""
 
         self.output_shape = 3
 
-        # scaling data
-        scaler = MinMaxScaler((-1, 1))
-        self.X = scaler.fit_transform(X)
-
         # creating feature map
-        feature_dim = self.X.shape[1]
-        feature_map = ZFeatureMap(feature_dim)
+        feature_map = ZFeatureMap(num_inputs)
 
         # creating ansatz
-        ansatz = RealAmplitudes(feature_dim)
+        ansatz = RealAmplitudes(num_inputs)
 
-        qc = QuantumCircuit(feature_dim)
-        qc.append(feature_map, range(feature_dim))
-        qc.append(ansatz, range(feature_dim))
+        qc = QuantumCircuit(num_inputs)
+        qc.append(feature_map, range(num_inputs))
+        qc.append(ansatz, range(num_inputs))
 
         def three_class(x):
             return f"{x:b}".count("1") % 3
@@ -124,7 +119,9 @@ class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         if dataset == "dataset_synthetic":
             self.setup_dataset_synthetic(num_inputs, quantum_instance_name, optimizer_name)
         elif dataset == "dataset_iris":
-            self.setup_dataset_iris(self.X, quantum_instance_name, optimizer_name)
+            scaler = MinMaxScaler((-1, 1))
+            self.X = scaler.fit_transform(self.X)
+            self.setup_dataset_iris(num_inputs, quantum_instance_name, optimizer_name)
 
     def time_fit_circuit_qnn_classifier(self, _, __, ___):
         """Time fitting CircuitQNN classifier to data."""

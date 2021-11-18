@@ -78,7 +78,6 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
             neural_network=self.circuit_qnn, optimizer=COBYLA()
         )
         self.circuit_classifier_fitted.fit(self.X, self.y01)
-        self.circuit_classifier_fitted.score(self.X, self.y01)
         self.y_predict = self.circuit_classifier_fitted.predict(self.X_test)
 
     def track_overall_accuracy_circuit_qnn_classifier(self, _, __):

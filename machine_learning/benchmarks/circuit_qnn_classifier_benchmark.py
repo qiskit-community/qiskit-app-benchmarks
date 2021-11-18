@@ -72,7 +72,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         )
         self.circuit_classifier_fitted.fit(X, y)
 
-    def setup_dataset_iris(self, X, y, quantum_instance_name):
+    def setup_dataset_iris(self, X, y, num_inputs, quantum_instance_name):
         """Training CircuitQNN function for iris dataset."""
 
         self.output_shape = 3
@@ -82,15 +82,14 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         self.X = scaler.fit_transform(X)
 
         # creating feature map
-        feature_dim = self.X.shape[1]
-        feature_map = ZFeatureMap(feature_dim)
+        feature_map = ZFeatureMap(num_inputs)
 
         # creating ansatz
-        ansatz = RealAmplitudes(feature_dim)
+        ansatz = RealAmplitudes(num_inputs)
 
-        qc = QuantumCircuit(feature_dim)
-        qc.append(feature_map, range(feature_dim))
-        qc.append(ansatz, range(feature_dim))
+        qc = QuantumCircuit(num_inputs)
+        qc.append(feature_map, range(num_inputs))
+        qc.append(ansatz, range(num_inputs))
 
         def three_class(x):
             return f"{x:b}".count("1") % 3
@@ -122,7 +121,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         if dataset == "dataset_synthetic":
             self.setup_dataset_synthetic(self.X, self.y01, num_inputs, quantum_instance_name)
         elif dataset == "dataset_iris":
-            self.setup_dataset_iris(self.X, self.y01, quantum_instance_name)
+            self.setup_dataset_iris(self.X, self.y01, num_inputs, quantum_instance_name)
 
     def time_score_circuit_qnn_classifier(self, _, __):
         """Time scoring CircuitQNN classifier on data."""
