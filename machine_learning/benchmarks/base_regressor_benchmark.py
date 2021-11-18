@@ -17,8 +17,8 @@ from qiskit.utils import QuantumInstance
 from .datasets import (
     DATASET_SYNTHETIC_REGRESSION_FEATURES,
     DATASET_SYNTHETIC_REGRESSION_LABELS,
-    DATASET_CCPP_FEATURES,
-    DATASET_CCPP_LABELS,
+    DATASET_CCPP_REGRESSION_FEATURES,
+    DATASET_CCPP_REGRESSION_LABELS,
 )
 
 
@@ -42,5 +42,5 @@ class BaseRegressorBenchmark(ABC):
                 "features": DATASET_SYNTHETIC_REGRESSION_FEATURES,
                 "labels": DATASET_SYNTHETIC_REGRESSION_LABELS,
             },
-            "dataset_ccpp": {"features": DATASET_CCPP_FEATURES, "labels": DATASET_CCPP_LABELS},
+            "dataset_ccpp": {"features": DATASET_CCPP_REGRESSION_FEATURES, "labels": DATASET_CCPP_REGRESSION_LABELS},
         }

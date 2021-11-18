@@ -74,6 +74,6 @@ ccpp_df = pd.read_csv(f"{abs_path}/CCPP_data.csv")
 ccpp_features = ccpp_df[["AT", "V", "AP", "RH"]]
 ccpp_labels = ccpp_df["PE"]
 
-DATASET_CCPP_FEATURES = ccpp_features[:35].to_numpy()
+DATASET_CCPP_REGRESSION_FEATURES = ccpp_features[:35].to_numpy()
 
-DATASET_CCPP_LABELS = ccpp_labels[:35].to_numpy()
+DATASET_CCPP_REGRESSION_LABELS = ccpp_labels[:35].to_numpy()
