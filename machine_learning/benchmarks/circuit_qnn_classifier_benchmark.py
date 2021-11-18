@@ -32,7 +32,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
     version = 1
     timeout = 1200.0
     params = [
-        ["dataset_synthetic_classification", "dataset_iris"],
+        ["dataset_synthetic", "dataset_iris"],
         ["qasm_simulator", "statevector_simulator"],
     ]
     param_names = ["dataset", "backend name"]
@@ -119,7 +119,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         num_inputs = len(self.X[0])
         self.y01 = self.datasets[dataset]["labels"]
 
-        if dataset == "dataset_synthetic_classification":
+        if dataset == "dataset_synthetic":
             self.setup_dataset_synthetic(self.X, self.y01, num_inputs, quantum_instance_name)
         elif dataset == "dataset_iris":
             self.setup_dataset_iris(self.X, self.y01, quantum_instance_name)

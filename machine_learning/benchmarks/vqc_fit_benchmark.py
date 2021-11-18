@@ -29,7 +29,7 @@ class VqcFitBenchmarks(BaseClassifierBenchmark):
     version = 1
     timeout = 1200.0
     params = (
-        ["dataset_synthetic_classification", "dataset_iris"],
+        ["dataset_synthetic", "dataset_iris"],
         ["qasm_simulator", "statevector_simulator"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
         ["cross_entropy", "squared_error"],
@@ -92,7 +92,7 @@ class VqcFitBenchmarks(BaseClassifierBenchmark):
         self.X = self.datasets[dataset]["features"]
         self.y = self.datasets[dataset]["labels"]
 
-        if dataset == "dataset_synthetic_classification":
+        if dataset == "dataset_synthetic":
             self.setup_dataset_synthetic_classification(
                 self.y, quantum_instance_name, optimizer_name, loss_name
             )

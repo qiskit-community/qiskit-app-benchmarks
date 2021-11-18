@@ -12,7 +12,6 @@
 
 """Circuit QNN Classifier score benchmarks."""
 from itertools import product
-import numpy as np
 from sklearn.metrics import accuracy_score, cohen_kappa_score, f1_score
 from sklearn.model_selection import train_test_split
 
@@ -31,7 +30,7 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
 
     version = 1
     timeout = 1200.0
-    params = [["dataset_synthetic_classification"], ["qasm_simulator", "statevector_simulator"]]
+    params = [["dataset_synthetic"], ["qasm_simulator", "statevector_simulator"]]
     param_names = ["dataset", "backend name"]
 
     def __init__(self):
@@ -39,7 +38,6 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
 
         self.output_shape = 2  # corresponds to the number of classes, possible outcomes of the (
         # parity) mapping.
-
 
     def setup(self, dataset, quantum_instance_name):
         """setup"""
@@ -95,8 +93,9 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
 
     def track_f1_score_circuit_qnn_classifier(self, _, __):
         """Tracks the f1 score for each class of the classification results."""
-        f1 = f1_score(self.y_test, self.y_predict, average='macro')
+        f1 = f1_score(self.y_test, self.y_predict, average="macro")
         return f1
+
 
 if __name__ == "__main__":
     for dataset, backend in product(*CircuitQnnScoreClassifierBenchmarks.params):

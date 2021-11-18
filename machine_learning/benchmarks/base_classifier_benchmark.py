@@ -16,10 +16,10 @@ from abc import ABC
 from qiskit import Aer
 from qiskit.utils import QuantumInstance
 from .datasets import (
-    DATASET_SYNTHETIC_FEATURES,
-    DATASET_SYNTHETIC_LABELS,
-    DATASET_IRIS_FEATURES,
-    DATASET_IRIS_LABELS,
+    DATASET_SYNTHETIC_CLASSIFICATION_FEATURES,
+    DATASET_SYNTHETIC_CLASSIFICATION_LABELS,
+    DATASET_IRIS_CLASSIFICATION_FEATURES,
+    DATASET_IRIS_CLASSIFICATION_LABELS,
 )
 
 
@@ -39,12 +39,12 @@ class BaseClassifierBenchmark(ABC):
         }
 
         self.datasets = {
-            "dataset_synthetic_classification": {
-                "features": DATASET_SYNTHETIC_FEATURES,
-                "labels": DATASET_SYNTHETIC_LABELS,
+            "dataset_synthetic": {
+                "features": DATASET_SYNTHETIC_CLASSIFICATION_FEATURES,
+                "labels": DATASET_SYNTHETIC_CLASSIFICATION_LABELS,
             },
             "dataset_iris": {
-                "features": DATASET_IRIS_FEATURES,
-                "labels": DATASET_IRIS_LABELS,
+                "features": DATASET_IRIS_CLASSIFICATION_FEATURES,
+                "labels": DATASET_IRIS_CLASSIFICATION_LABELS,
             },
         }

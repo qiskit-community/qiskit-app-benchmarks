@@ -15,7 +15,7 @@
 import numpy as np
 from sklearn.datasets import load_iris
 
-DATASET_SYNTHETIC_FEATURES = np.array(
+DATASET_SYNTHETIC_CLASSIFICATION_FEATURES = np.array(
     [
         [0.63332707, 0.05700334],
         [-0.04218316, -0.74066734],
@@ -40,7 +40,7 @@ DATASET_SYNTHETIC_FEATURES = np.array(
     ]
 )
 
-DATASET_SYNTHETIC_LABELS = np.array(
+DATASET_SYNTHETIC_CLASSIFICATION_LABELS = np.array(
     [
         1,
         0,
@@ -77,5 +77,5 @@ for i in range(35):
     iris_features_list.append(iris_features[index])
     iris_labels_list.append(iris_labels[index])
 
-DATASET_IRIS_FEATURES = np.asarray(iris_features_list)
-DATASET_IRIS_LABELS = np.asarray(iris_labels_list)
+DATASET_IRIS_CLASSIFICATION_FEATURES = np.asarray(iris_features_list)
+DATASET_IRIS_CLASSIFICATION_LABELS = np.asarray(iris_labels_list)
