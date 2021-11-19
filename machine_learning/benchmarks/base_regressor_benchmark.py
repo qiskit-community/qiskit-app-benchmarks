@@ -42,5 +42,8 @@ class BaseRegressorBenchmark(ABC):
                 "features": DATASET_SYNTHETIC_REGRESSION_FEATURES,
                 "labels": DATASET_SYNTHETIC_REGRESSION_LABELS,
             },
-            "dataset_ccpp": {"features": DATASET_CCPP_REGRESSION_FEATURES, "labels": DATASET_CCPP_REGRESSION_LABELS},
+            "dataset_ccpp": {
+                "features": DATASET_CCPP_REGRESSION_FEATURES,
+                "labels": DATASET_CCPP_REGRESSION_LABELS,
+            },
         }
