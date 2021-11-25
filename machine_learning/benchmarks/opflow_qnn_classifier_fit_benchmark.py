@@ -63,7 +63,6 @@ class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         self.y = y[idx_binary_class]
 
         opflow_qnn = TwoLayerQNN(num_inputs, quantum_instance=self.backends[quantum_instance_name])
-        opflow_qnn.forward(self.X[0, :], np.random.rand(opflow_qnn.num_weights))
 
         self.opflow_classifier = NeuralNetworkClassifier(
             opflow_qnn, optimizer=self.optimizers[optimizer_name]
