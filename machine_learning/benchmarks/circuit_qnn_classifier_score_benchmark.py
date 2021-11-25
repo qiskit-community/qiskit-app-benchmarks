@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split
 
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
-from qiskit.algorithms.optimizers import COBYLA
+from qiskit.algorithms.optimizers import NELDER_MEAD
 from qiskit_machine_learning.neural_networks import CircuitQNN
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 
@@ -75,7 +75,7 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
         )
 
         self.circuit_classifier_fitted = NeuralNetworkClassifier(
-            neural_network=self.circuit_qnn, optimizer=COBYLA()
+            neural_network=self.circuit_qnn, optimizer=NELDER_MEAD()
         )
         self.circuit_classifier_fitted.fit(self.X, self.y01)
         self.y_predict = self.circuit_classifier_fitted.predict(self.X_test)

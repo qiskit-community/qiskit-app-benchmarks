@@ -16,6 +16,8 @@ from timeit import timeit
 
 import numpy as np
 from qiskit.algorithms.optimizers import COBYLA, NELDER_MEAD, L_BFGS_B
+from qiskit.circuit.library import ZFeatureMap
+from qiskit.circuit.library.n_local.real_amplitudes import RealAmplitudes
 from qiskit_machine_learning.neural_networks import TwoLayerQNN
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 
@@ -45,8 +47,15 @@ class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         num_inputs = len(X[0])
         self.y = 2 * y - 1  # in {-1, +1}
 
-        opflow_qnn = TwoLayerQNN(num_inputs, quantum_instance=self.backends[quantum_instance_name])
-        opflow_qnn.forward(self.X[0, :], np.random.rand(opflow_qnn.num_weights))
+        feature_map = ZFeatureMap(num_inputs)
+        ansatz = RealAmplitudes(num_inputs)
+
+        opflow_qnn = TwoLayerQNN(
+            num_inputs,
+            feature_map=feature_map,
+            ansatz=ansatz,
+            quantum_instance=self.backends[quantum_instance_name],
+        )
 
         self.opflow_classifier = NeuralNetworkClassifier(
             opflow_qnn, optimizer=self.optimizers[optimizer_name]
@@ -62,7 +71,15 @@ class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         self.X = X[idx_binary_class]
         self.y = y[idx_binary_class]
 
-        opflow_qnn = TwoLayerQNN(num_inputs, quantum_instance=self.backends[quantum_instance_name])
+        feature_map = ZFeatureMap(num_inputs)
+        ansatz = RealAmplitudes(num_inputs)
+
+        opflow_qnn = TwoLayerQNN(
+            num_inputs,
+            feature_map=feature_map,
+            ansatz=ansatz,
+            quantum_instance=self.backends[quantum_instance_name],
+        )
 
         self.opflow_classifier = NeuralNetworkClassifier(
             opflow_qnn, optimizer=self.optimizers[optimizer_name]

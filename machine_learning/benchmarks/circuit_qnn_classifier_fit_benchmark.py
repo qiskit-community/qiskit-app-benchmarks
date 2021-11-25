@@ -16,7 +16,7 @@ from timeit import timeit
 from sklearn.preprocessing import MinMaxScaler
 
 from qiskit import QuantumCircuit
-from qiskit.circuit.library import ZFeatureMap, ZZFeatureMap, RealAmplitudes
+from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
 from qiskit.algorithms.optimizers import COBYLA, NELDER_MEAD, L_BFGS_B
 from qiskit_machine_learning.neural_networks import CircuitQNN
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
@@ -83,7 +83,7 @@ class CircuitQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
         self.output_shape = 3
 
         # creating feature map
-        feature_map = ZFeatureMap(num_inputs)
+        feature_map = ZZFeatureMap(num_inputs)
 
         # creating ansatz
         ansatz = RealAmplitudes(num_inputs)

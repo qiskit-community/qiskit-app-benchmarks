@@ -17,8 +17,8 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 from qiskit import QuantumCircuit
-from qiskit.circuit.library import ZFeatureMap, ZZFeatureMap, RealAmplitudes
-from qiskit.algorithms.optimizers import COBYLA, NELDER_MEAD
+from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
+from qiskit.algorithms.optimizers import NELDER_MEAD
 from qiskit_machine_learning.neural_networks import CircuitQNN
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 
@@ -68,7 +68,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         )
 
         self.circuit_classifier_fitted = NeuralNetworkClassifier(
-            neural_network=self.circuit_qnn, optimizer=COBYLA()
+            neural_network=self.circuit_qnn, optimizer=NELDER_MEAD()
         )
         self.circuit_classifier_fitted.fit(X, y)
 
@@ -82,7 +82,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         self.X = scaler.fit_transform(X)
 
         # creating feature map
-        feature_map = ZFeatureMap(num_inputs)
+        feature_map = ZZFeatureMap(num_inputs)
 
         # creating ansatz
         ansatz = RealAmplitudes(num_inputs)

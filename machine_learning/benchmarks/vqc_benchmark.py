@@ -16,7 +16,7 @@ from timeit import timeit
 
 import numpy as np
 from qiskit.circuit.library import ZFeatureMap, ZZFeatureMap, RealAmplitudes
-from qiskit.algorithms.optimizers import COBYLA
+from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B
 from qiskit_machine_learning.algorithms import VQC
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
@@ -76,7 +76,7 @@ class VqcBenchmarks(BaseClassifierBenchmark):
             feature_map=feature_map,
             ansatz=ansatz,
             loss="cross_entropy",
-            optimizer=COBYLA(),
+            optimizer=L_BFGS_B(),
             quantum_instance=self.backends[quantum_instance_name],
         )
 
