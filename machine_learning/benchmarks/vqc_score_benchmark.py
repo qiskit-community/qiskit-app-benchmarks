@@ -10,24 +10,23 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""Circuit QNN Classifier score benchmarks."""
+"""VQC score benchmarks."""
 from itertools import product
+
+import numpy as np
+from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B
+from qiskit.circuit.library import RealAmplitudes, ZFeatureMap, ZZFeatureMap
+from qiskit_machine_learning.algorithms import VQC
 from sklearn.metrics import accuracy_score, cohen_kappa_score, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-
-from qiskit import QuantumCircuit
-from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
-from qiskit.algorithms.optimizers import NELDER_MEAD
-from qiskit_machine_learning.neural_networks import CircuitQNN
-from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
 from .base_classifier_benchmark import BaseClassifierBenchmark
 
 
-class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
-    """Circuit QNN Classifier Score benchmarks."""
+class VqcScoreClassifierBenchmarks(BaseClassifierBenchmark):
+    """VQC Score benchmarks."""
 
     version = 1
     timeout = 1200.0
@@ -35,93 +34,72 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
     param_names = ["dataset", "backend name"]
 
     def setup_dataset_synthetic(self, X_train, X_test, y_train, num_inputs, quantum_instance_name):
-        """Training CircuitQNN function for synthetic dataset."""
+        """Training VQC function for iris dataset."""
 
-        self.output_shape = 2  # corresponds to the number of classes, possible outcomes of the (
-        # parity) mapping.
+        num_inputs = 2
 
-        # parity maps bitstrings to 0 or 1
-        def parity(x):
-            return f"{x:b}".count("1") % 2
-
-        # construct feature map
+        # construct feature map, ansatz, and optimizer
         feature_map = ZZFeatureMap(num_inputs)
-
-        # construct ansatz
         ansatz = RealAmplitudes(num_inputs, reps=1)
 
-        # construct quantum circuit
-        qc = QuantumCircuit(num_inputs)
-        qc.append(feature_map, range(num_inputs))
-        qc.append(ansatz, range(num_inputs))
-
-        # construct QNN
-        self.circuit_qnn = CircuitQNN(
-            circuit=qc,
-            input_params=feature_map.parameters,
-            weight_params=ansatz.parameters,
-            interpret=parity,
-            output_shape=self.output_shape,
+        # construct variational quantum classifier
+        self.vqc_fitted = VQC(
+            feature_map=feature_map,
+            ansatz=ansatz,
+            loss="cross_entropy",
+            optimizer=COBYLA(),
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        self.circuit_classifier_fitted = NeuralNetworkClassifier(
-            neural_network=self.circuit_qnn, optimizer=NELDER_MEAD()
-        )
-
-        self.circuit_classifier_fitted.fit(X_train, y_train)
-        self.y_predict = self.circuit_classifier_fitted.predict(X_test)
+        self.vqc_fitted.fit(X_train, y_train)
+        self.y_predict = self.vqc_fitted.predict(X_test)
 
     def setup_dataset_iris(self, X_train, X_test, y_train, num_inputs, quantum_instance_name):
         """Training CircuitQNN function for iris dataset."""
 
-        self.output_shape = 3
+        num_inputs = 4
 
-        # creating feature map
-        feature_map = ZZFeatureMap(num_inputs)
+        # construct feature map, ansatz, and optimizer
+        feature_map = ZFeatureMap(num_inputs)
+        ansatz = RealAmplitudes(num_inputs, reps=1)
 
-        # creating ansatz
-        ansatz = RealAmplitudes(num_inputs)
-
-        qc = QuantumCircuit(num_inputs)
-        qc.append(feature_map, range(num_inputs))
-        qc.append(ansatz, range(num_inputs))
-
-        def three_class(x):
-            return f"{x:b}".count("1") % 3
-
-        # construct QNN
-        circuit_qnn = CircuitQNN(
-            circuit=qc,
-            input_params=feature_map.parameters,
-            weight_params=ansatz.parameters,
-            interpret=three_class,
-            output_shape=self.output_shape,
+        # construct variational quantum classifier
+        self.vqc_fitted = VQC(
+            feature_map=feature_map,
+            ansatz=ansatz,
+            loss="cross_entropy",
+            optimizer=L_BFGS_B(),
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        self.circuit_classifier_fitted = NeuralNetworkClassifier(
-            neural_network=circuit_qnn,
-            optimizer=NELDER_MEAD(),
-        )
-
-        self.circuit_classifier_fitted.fit(X_train, y_train)
-        self.y_predict = self.circuit_classifier_fitted.predict(X_test)
+        self.vqc_fitted.fit(X_train, y_train)
+        self.y_predict = self.vqc_fitted.predict(X_test)
 
     def setup(self, dataset, quantum_instance_name):
         """Setup"""
 
         self.X = self.datasets[dataset]["features"]
         num_inputs = len(self.X[0])
-        self.y01 = self.datasets[dataset]["labels"]
+        self.y = self.datasets[dataset]["labels"]
 
-        if dataset == "dataset_iris":
+        if dataset == "dataset_synthetic":
+            # one hot encoding target
+            self.y_one_hot = np.zeros((len(self.y), 2))
+            for i, _ in enumerate(self.y):
+                self.y_one_hot[i, self.y[i]] = 1
+
+        elif dataset == "dataset_iris":
             # scaling data
             scaler = MinMaxScaler((-1, 1))
             self.X = scaler.fit_transform(self.X)
 
+            # one hot encoding target
+            self.y_one_hot = np.zeros((len(self.y), 3))
+            for i, _ in enumerate(self.y):
+                self.y_one_hot[i, self.y[i]] = 1
+
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            self.X, self.y01, test_size=0.25
+            self.X, self.y_one_hot, test_size=0.25
         )
 
         if dataset == "dataset_synthetic":
@@ -150,8 +128,8 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
 
 
 if __name__ == "__main__":
-    for dataset, backend in product(*CircuitQnnScoreClassifierBenchmarks.params):
-        bench = CircuitQnnScoreClassifierBenchmarks()
+    for dataset, backend in product(*VqcScoreClassifierBenchmarks.params):
+        bench = VqcScoreClassifierBenchmarks()
         try:
             bench.setup(dataset, backend)
         except NotImplementedError:

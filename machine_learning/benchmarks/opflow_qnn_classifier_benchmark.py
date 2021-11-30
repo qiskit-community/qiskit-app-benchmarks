@@ -18,8 +18,9 @@ import numpy as np
 from qiskit.algorithms.optimizers import COBYLA
 from qiskit.circuit.library import ZFeatureMap
 from qiskit.circuit.library.n_local.real_amplitudes import RealAmplitudes
-from qiskit_machine_learning.neural_networks import TwoLayerQNN
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
+from qiskit_machine_learning.neural_networks import TwoLayerQNN
+from sklearn.preprocessing import MinMaxScaler
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
 from .base_classifier_benchmark import BaseClassifierBenchmark
@@ -36,7 +37,7 @@ class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
     ]
     param_names = ["dataset", "backend name"]
 
-    def setup_dataset_synthetic_classification(self, X, y, quantum_instance_name):
+    def setup_dataset_synthetic(self, X, y, quantum_instance_name):
         """Training TwoLayerQNN for synthetic classification dataset."""
 
         num_inputs = len(X[0])
@@ -85,8 +86,11 @@ class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
         self.y = self.datasets[dataset]["labels"]
 
         if dataset == "dataset_synthetic":
-            self.setup_dataset_synthetic_classification(self.X, self.y, quantum_instance_name)
+            self.setup_dataset_synthetic(self.X, self.y, quantum_instance_name)
         elif dataset == "dataset_iris":
+            scaler = MinMaxScaler((-1, 1))
+            self.X = scaler.fit_transform(self.X)
+
             self.setup_dataset_iris(self.X, self.y, quantum_instance_name)
 
     def time_score_opflow_qnn_classifier(self, _, __):

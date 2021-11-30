@@ -106,7 +106,7 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
 
         self.circuit_classifier_fitted = NeuralNetworkClassifier(
             neural_network=circuit_qnn,
-            optimizer=NELDER_MEAD(maxiter=10),
+            optimizer=NELDER_MEAD(),
         )
 
         self.circuit_classifier_fitted.fit(X, y)
