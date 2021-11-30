@@ -14,10 +14,12 @@
 from itertools import product
 from timeit import timeit
 
-from sklearn.preprocessing import MinMaxScaler
+from qiskit import QuantumCircuit
 from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B, NELDER_MEAD
-from qiskit.circuit.library import ZFeatureMap, PauliTwoDesign
+from qiskit.circuit import Parameter
+from qiskit.circuit.library import PauliTwoDesign, ZFeatureMap
 from qiskit_machine_learning.algorithms import VQR
+from sklearn.preprocessing import MinMaxScaler
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
 from .base_regressor_benchmark import BaseRegressorBenchmark
@@ -42,8 +44,15 @@ class VqrFitBenchmarks(BaseRegressorBenchmark):
     def setup_dataset_synthetic_regression(self, quantum_instance_name, optimizer_name):
         """Training VQR function for synthetic regression dataset."""
 
-        feature_map = ZFeatureMap(2)
-        ansatz = PauliTwoDesign(2)
+        # construct simple feature map
+        param_x = Parameter("x")
+        feature_map = QuantumCircuit(1, name="fm")
+        feature_map.ry(param_x, 0)
+
+        # construct simple ansatz
+        param_y = Parameter("y")
+        ansatz = QuantumCircuit(1, name="vf")
+        ansatz.ry(param_y, 0)
 
         # construct variational quantum regressor
         self.vqr = VQR(

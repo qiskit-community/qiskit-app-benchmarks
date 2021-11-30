@@ -13,12 +13,14 @@
 """Variational Quantum Regressor benchmarks."""
 from itertools import product
 
-from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+from qiskit import QuantumCircuit
+from qiskit.algorithms.optimizers import L_BFGS_B
+from qiskit.circuit import Parameter
+from qiskit.circuit.library import PauliTwoDesign, ZFeatureMap
+from qiskit_machine_learning.algorithms import VQR
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-from qiskit.algorithms.optimizers import L_BFGS_B, NELDER_MEAD
-from qiskit.circuit.library import ZFeatureMap, PauliTwoDesign
-from qiskit_machine_learning.algorithms import VQR
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
 from .base_regressor_benchmark import BaseRegressorBenchmark
@@ -40,14 +42,21 @@ class VqrScoreBenchmarks(BaseRegressorBenchmark):
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.2)
 
-        feature_map = ZFeatureMap(2)
-        ansatz = PauliTwoDesign(2)
+        # construct simple feature map
+        param_x = Parameter("x")
+        feature_map = QuantumCircuit(1, name="fm")
+        feature_map.ry(param_x, 0)
+
+        # construct simple ansatz
+        param_y = Parameter("y")
+        ansatz = QuantumCircuit(1, name="vf")
+        ansatz.ry(param_y, 0)
 
         # construct variational quantum regressor
         self.vqr_fitted = VQR(
             feature_map=feature_map,
             ansatz=ansatz,
-            optimizer=NELDER_MEAD(),
+            optimizer=L_BFGS_B(),
             quantum_instance=self.backends[quantum_instance_name],
         )
 

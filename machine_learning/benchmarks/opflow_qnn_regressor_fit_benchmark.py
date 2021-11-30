@@ -14,10 +14,12 @@
 from itertools import product
 from timeit import timeit
 
+from qiskit import QuantumCircuit
+from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B, NELDER_MEAD
+from qiskit.circuit import Parameter
 from qiskit.circuit.library import EfficientSU2, ZFeatureMap
-from qiskit.algorithms.optimizers import L_BFGS_B, NELDER_MEAD, COBYLA
-from qiskit_machine_learning.neural_networks import TwoLayerQNN
 from qiskit_machine_learning.algorithms.regressors import NeuralNetworkRegressor
+from qiskit_machine_learning.neural_networks import TwoLayerQNN
 from sklearn.preprocessing import MinMaxScaler
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
@@ -43,9 +45,17 @@ class OpflowQnnFitRegressorBenchmarks(BaseRegressorBenchmark):
     def setup_dataset_synthetic_regression(self, quantum_instance_name, optimizer):
         """Training Opflow QNN function for synthetic regression dataset."""
 
-        num_inputs = 2
-        feature_map = ZFeatureMap(num_inputs)
-        ansatz = EfficientSU2(num_inputs)
+        num_inputs = 1
+
+        # construct simple feature map
+        param_x = Parameter("x")
+        feature_map = QuantumCircuit(1, name="fm")
+        feature_map.ry(param_x, 0)
+
+        # construct simple ansatz
+        param_y = Parameter("y")
+        ansatz = QuantumCircuit(1, name="vf")
+        ansatz.ry(param_y, 0)
 
         opflow_qnn = TwoLayerQNN(
             num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name]
