@@ -12,6 +12,7 @@
 
 """Variational Quantum Regressor benchmarks."""
 from itertools import product
+from joblib import dump, load
 from timeit import timeit
 
 from qiskit import QuantumCircuit
@@ -19,6 +20,7 @@ from qiskit.algorithms.optimizers import L_BFGS_B
 from qiskit.circuit import Parameter
 from qiskit.circuit.library import PauliTwoDesign, ZFeatureMap
 from qiskit_machine_learning.algorithms import VQR
+from scipy.sparse import data
 from sklearn.preprocessing import MinMaxScaler
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
@@ -57,7 +59,12 @@ class VqrBenchmarks(BaseRegressorBenchmark):
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        self.vqr_fitted.fit(X, y)
+        try:
+            self.vqr_fitted._fit_result = load(
+                "/tmp/{}_{}.obj".format("dataset_synthetic_regression", quantum_instance_name)
+            )
+        except Exception as e:
+            self.vqr_fitted.fit(X, y)
 
     def setup_dataset_ccpp(self, X, y, quantum_instance_name):
         """Training VQR for CCPP dataset."""
@@ -77,11 +84,15 @@ class VqrBenchmarks(BaseRegressorBenchmark):
         )
 
         # fit regressor
-        self.vqr_fitted.fit(self.X, self.y)
+        try:
+            self.vqr_fitted._fit_result = load(
+                "/tmp/{}_{}.obj".format("dataset_ccpp", quantum_instance_name)
+            )
+        except Exception as e:
+            self.vqr_fitted.fit(X, y)
 
     def setup(self, dataset, quantum_instance_name):
         """setup"""
-
         self.X = self.datasets[dataset]["features"]
         self.y = self.datasets[dataset]["labels"]
 
@@ -89,6 +100,13 @@ class VqrBenchmarks(BaseRegressorBenchmark):
             self.setup_dataset_synthetic_regression(self.X, self.y, quantum_instance_name)
         elif dataset == "dataset_ccpp":
             self.setup_dataset_ccpp(self.X, self.y, quantum_instance_name)
+
+    def setup_cache(self):
+        """Cache stuff"""
+        for dataset, backend in product(*self.params):
+            self.setup(dataset, backend)
+
+            dump(self.vqr_fitted._fit_result, "/tmp/{}_{}.obj".format(dataset, backend))
 
     def time_score_vqr(self, _, __):
         """Time scoring VQR on data."""
