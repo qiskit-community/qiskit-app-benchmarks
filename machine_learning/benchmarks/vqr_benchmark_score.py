@@ -13,6 +13,7 @@
 """Variational Quantum Regressor benchmarks."""
 from itertools import product
 
+from joblib import dump, load
 from qiskit import QuantumCircuit
 from qiskit.algorithms.optimizers import L_BFGS_B
 from qiskit.circuit import Parameter
@@ -60,8 +61,14 @@ class VqrScoreBenchmarks(BaseRegressorBenchmark):
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        # fit regressor
-        self.vqr_fitted.fit(self.X_train, self.y_train)
+        try:
+            self.vqr_fitted._fit_result = load(
+                "/tmp/dataset_synthetic_regression_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            # fit regressor
+            self.vqr_fitted.fit(self.X_train, self.y_train)
+
         self.pred = self.vqr_fitted.predict(self.X_test)
 
     def setup_dataset_ccpp(self, X, y, quantum_instance_name):
@@ -83,8 +90,12 @@ class VqrScoreBenchmarks(BaseRegressorBenchmark):
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        # fit regressor
-        self.vqr_fitted.fit(self.X_train, self.y_train)
+        try:
+            self.vqr_fitted._fit_result = load("/tmp/dataset_ccpp_{quantum_instance_name}.obj")
+        except FileNotFoundError:
+            # fit regressor
+            self.vqr_fitted.fit(self.X_train, self.y_train)
+
         self.pred = self.vqr_fitted.predict(self.X_test)
 
     def setup(self, dataset, quantum_instance_name):
@@ -97,6 +108,13 @@ class VqrScoreBenchmarks(BaseRegressorBenchmark):
             self.setup_dataset_synthetic_regression(self.X, self.y, quantum_instance_name)
         elif dataset == "dataset_ccpp":
             self.setup_dataset_ccpp(self.X, self.y, quantum_instance_name)
+
+    def setup_cache(self):
+        """Cache VQR fitted model"""
+        for dataset, backend in product(*self.params):
+            self.setup(dataset, backend)
+
+            dump(self.vqr_fitted._fit_result, "/tmp/{dataset}_{backend}.obj")
 
     def track_r2_score(self, _, __):
         """R2 score of VQR on data."""
