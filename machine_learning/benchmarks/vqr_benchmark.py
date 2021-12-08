@@ -60,7 +60,7 @@ class VqrBenchmarks(BaseRegressorBenchmark):
 
         try:
             self.vqr_fitted._fit_result = load(
-                "/tmp/dataset_synthetic_regression_{quantum_instance_name}.obj"
+                f"/tmp/dataset_synthetic_regression_{quantum_instance_name}.obj"
             )
         except FileNotFoundError:
             self.vqr_fitted.fit(X, y)
@@ -83,7 +83,7 @@ class VqrBenchmarks(BaseRegressorBenchmark):
         )
 
         try:
-            self.vqr_fitted._fit_result = load("/tmp/dataset_ccpp_{quantum_instance_name}.obj")
+            self.vqr_fitted._fit_result = load(f"/tmp/dataset_ccpp_{quantum_instance_name}.obj")
         except FileNotFoundError:
             self.vqr_fitted.fit(X, y)
 

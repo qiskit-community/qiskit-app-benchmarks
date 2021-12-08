@@ -63,7 +63,7 @@ class VqrScoreBenchmarks(BaseRegressorBenchmark):
 
         try:
             self.vqr_fitted._fit_result = load(
-                "/tmp/dataset_synthetic_regression_{quantum_instance_name}.obj"
+                f"/tmp/dataset_synthetic_regression_{quantum_instance_name}.obj"
             )
         except FileNotFoundError:
             # fit regressor
@@ -91,7 +91,7 @@ class VqrScoreBenchmarks(BaseRegressorBenchmark):
         )
 
         try:
-            self.vqr_fitted._fit_result = load("/tmp/dataset_ccpp_{quantum_instance_name}.obj")
+            self.vqr_fitted._fit_result = load(f"/tmp/dataset_ccpp_{quantum_instance_name}.obj")
         except FileNotFoundError:
             # fit regressor
             self.vqr_fitted.fit(self.X_train, self.y_train)
@@ -114,7 +114,7 @@ class VqrScoreBenchmarks(BaseRegressorBenchmark):
         for dataset, backend in product(*self.params):
             self.setup(dataset, backend)
 
-            dump(self.vqr_fitted._fit_result, "/tmp/{dataset}_{backend}.obj")
+            dump(self.vqr_fitted._fit_result, f"/tmp/{dataset}_{backend}.obj")
 
     def track_r2_score(self, _, __):
         """R2 score of VQR on data."""

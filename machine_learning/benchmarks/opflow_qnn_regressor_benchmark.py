@@ -13,6 +13,7 @@
 """Neural Network Regressor benchmarks."""
 from itertools import product
 from timeit import timeit
+from joblib import dump, load
 
 from qiskit import QuantumCircuit
 from qiskit.algorithms.optimizers import L_BFGS_B
@@ -57,7 +58,13 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
         )
 
         self.opflow_regressor_fitted = NeuralNetworkRegressor(opflow_qnn, optimizer=COBYLA())
-        self.opflow_regressor_fitted.fit(self.X, self.y)
+
+        try:
+            self.opflow_regressor_fitted._fit_result = load(
+                f"/tmp/dataset_synthetic_regression_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.opflow_regressor_fitted.fit(self.X, self.y)
 
     def setup_dataset_ccpp(self, X, y, quantum_instance_name):
         """Training Opflow QNN for CCPP dataset."""
@@ -75,7 +82,13 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
         )
 
         self.opflow_regressor_fitted = NeuralNetworkRegressor(opflow_qnn, optimizer=L_BFGS_B())
-        self.opflow_regressor_fitted.fit(self.X, self.y)
+
+        try:
+            self.opflow_regressor_fitted._fit_result = load(
+                f"/tmp/dataset_ccpp_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.opflow_regressor_fitted.fit(self.X, self.y)
 
     def setup(self, dataset, quantum_instance_name):
         """setup"""
@@ -87,6 +100,13 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
             self.setup_dataset_synthetic_regression(quantum_instance_name)
         elif dataset == "dataset_ccpp":
             self.setup_dataset_ccpp(self.X, self.y, quantum_instance_name)
+
+    def setup_cache(self):
+        """Cache Opflow fitted model"""
+        for dataset, backend in product(*self.params):
+            self.setup(dataset, backend)
+
+            dump(self.opflow_regressor_fitted._fit_result, f"/tmp/{dataset}_{backend}.obj")
 
     def time_score_opflow_qnn_regressor(self, _, __):
         """Time scoring OpflowQNN regressor on data."""
