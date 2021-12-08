@@ -15,6 +15,7 @@ from itertools import product
 from sklearn.metrics import accuracy_score, cohen_kappa_score, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
+from joblib import dump, load
 
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
@@ -69,7 +70,13 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
             neural_network=self.circuit_qnn, optimizer=NELDER_MEAD()
         )
 
-        self.circuit_classifier_fitted.fit(X_train, y_train)
+        try:
+            self.circuit_classifier_fitted._fit_result = load(
+                f"/tmp/dataset_synthetic_classification_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.circuit_classifier_fitted.fit(X_train, y_train)
+
         self.y_predict = self.circuit_classifier_fitted.predict(X_test)
 
     def setup_dataset_iris(self, X_train, X_test, y_train, num_inputs, quantum_instance_name):
@@ -104,8 +111,13 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
             neural_network=circuit_qnn,
             optimizer=NELDER_MEAD(),
         )
+        try:
+            self.circuit_classifier_fitted._fit_result = load(
+                f"/tmp/dataset_iris_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.circuit_classifier_fitted.fit(X_train, y_train)
 
-        self.circuit_classifier_fitted.fit(X_train, y_train)
         self.y_predict = self.circuit_classifier_fitted.predict(X_test)
 
     def setup(self, dataset, quantum_instance_name):
@@ -132,6 +144,13 @@ class CircuitQnnScoreClassifierBenchmarks(BaseClassifierBenchmark):
             self.setup_dataset_iris(
                 self.X_train, self.X_test, self.y_train, num_inputs, quantum_instance_name
             )
+
+    def setup_cache(self):
+        """Cache CircuitQNN fitted model"""
+        for dataset, backend in product(*self.params):
+            self.setup(dataset, backend)
+
+            dump(self.circuit_classifier_fitted._fit_result, f"/tmp/{dataset}_{backend}.obj")
 
     def track_overall_accuracy_circuit_qnn_classifier(self, _, __):
         """Tracks the overall accuracy of the classification results."""

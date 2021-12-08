@@ -15,8 +15,9 @@ from itertools import product
 from timeit import timeit
 
 import numpy as np
-from qiskit.circuit.library import ZFeatureMap, ZZFeatureMap, RealAmplitudes
+from joblib import dump, load
 from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B
+from qiskit.circuit.library import RealAmplitudes, ZFeatureMap, ZZFeatureMap
 from qiskit_machine_learning.algorithms import VQC
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
@@ -56,7 +57,12 @@ class VqcBenchmarks(BaseClassifierBenchmark):
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        self.vqc_fitted.fit(X, self.y_one_hot)
+        try:
+            self.vqc_fitted._fit_result = load(
+                f"/tmp/dataset_synthetic_classification_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.vqc_fitted.fit(X, self.y_one_hot)
 
     def setup_dataset_iris(self, X, y, quantum_instance_name):
         """Training VQC for iris dataset."""
@@ -80,7 +86,10 @@ class VqcBenchmarks(BaseClassifierBenchmark):
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        self.vqc_fitted.fit(X, self.y_one_hot)
+        try:
+            self.vqc_fitted._fit_result = load(f"/tmp/dataset_iris_{quantum_instance_name}.obj")
+        except FileNotFoundError:
+            self.vqc_fitted.fit(X, self.y_one_hot)
 
     def setup(self, dataset, quantum_instance_name):
         """setup"""
@@ -92,6 +101,13 @@ class VqcBenchmarks(BaseClassifierBenchmark):
             self.setup_dataset_synthetic_classification(self.X, self.y, quantum_instance_name)
         elif dataset == "dataset_iris":
             self.setup_dataset_iris(self.X, self.y, quantum_instance_name)
+
+    def setup_cache(self):
+        """Cache VQC fitted model"""
+        for dataset, backend in product(*self.params):
+            self.setup(dataset, backend)
+
+            dump(self.vqc_fitted._fit_result, f"/tmp/{dataset}_{backend}.obj")
 
     def time_score_vqc(self, _, __):
         """Time scoring VQC on data."""

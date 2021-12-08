@@ -15,6 +15,7 @@ from itertools import product
 from timeit import timeit
 
 import numpy as np
+from joblib import dump, load
 from qiskit.algorithms.optimizers import COBYLA
 from qiskit.circuit.library import ZFeatureMap
 from qiskit.circuit.library.n_local.real_amplitudes import RealAmplitudes
@@ -54,7 +55,13 @@ class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
         )
 
         self.opflow_classifier_fitted = NeuralNetworkClassifier(opflow_qnn, optimizer=COBYLA())
-        self.opflow_classifier_fitted.fit(self.X, self.y)
+
+        try:
+            self.opflow_classifier_fitted._fit_result = load(
+                f"/tmp/dataset_synthetic_classification_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.opflow_classifier_fitted.fit(self.X, self.y)
 
     def setup_dataset_iris(self, X, y, quantum_instance_name):
         """Training TwoLayerQNN for iris classification dataset."""
@@ -77,7 +84,13 @@ class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
         )
 
         self.opflow_classifier_fitted = NeuralNetworkClassifier(opflow_qnn, optimizer=COBYLA())
-        self.opflow_classifier_fitted.fit(self.X, self.y)
+
+        try:
+            self.opflow_classifier_fitted._fit_result = load(
+                f"/tmp/dataset_iris_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.opflow_classifier_fitted.fit(self.X, self.y)
 
     def setup(self, dataset, quantum_instance_name):
         """setup"""
@@ -92,6 +105,13 @@ class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
             self.X = scaler.fit_transform(self.X)
 
             self.setup_dataset_iris(self.X, self.y, quantum_instance_name)
+
+    def setup_cache(self):
+        """Cache Opflow fitted model"""
+        for dataset, backend in product(*self.params):
+            self.setup(dataset, backend)
+
+            dump(self.opflow_classifier_fitted._fit_result, f"/tmp/{dataset}_{backend}.obj")
 
     def time_score_opflow_qnn_classifier(self, _, __):
         """Time scoring OpflowQNN classifier on data."""

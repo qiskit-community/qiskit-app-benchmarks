@@ -14,6 +14,7 @@
 from itertools import product
 
 import numpy as np
+from joblib import dump, load
 from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B
 from qiskit.circuit.library import RealAmplitudes, ZFeatureMap, ZZFeatureMap
 from qiskit_machine_learning.algorithms import VQC
@@ -51,7 +52,13 @@ class VqcScoreClassifierBenchmarks(BaseClassifierBenchmark):
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        self.vqc_fitted.fit(X_train, y_train)
+        try:
+            self.vqc_fitted._fit_result = load(
+                f"/tmp/dataset_synthetic_classification_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.vqc_fitted.fit(X_train, y_train)
+
         self.y_predict = self.vqc_fitted.predict(X_test)
 
     def setup_dataset_iris(self, X_train, X_test, y_train, num_inputs, quantum_instance_name):
@@ -72,7 +79,11 @@ class VqcScoreClassifierBenchmarks(BaseClassifierBenchmark):
             quantum_instance=self.backends[quantum_instance_name],
         )
 
-        self.vqc_fitted.fit(X_train, y_train)
+        try:
+            self.vqc_fitted._fit_result = load(f"/tmp/dataset_iris_{quantum_instance_name}.obj")
+        except FileNotFoundError:
+            self.vqc_fitted.fit(X_train, y_train)
+
         self.y_predict = self.vqc_fitted.predict(X_test)
 
     def setup(self, dataset, quantum_instance_name):
@@ -111,19 +122,26 @@ class VqcScoreClassifierBenchmarks(BaseClassifierBenchmark):
                 self.X_train, self.X_test, self.y_train, num_inputs, quantum_instance_name
             )
 
+    def setup_cache(self):
+        """Cache VQC fitted model"""
+        for dataset, backend in product(*self.params):
+            self.setup(dataset, backend)
+
+            dump(self.vqc_fitted._fit_result, f"/tmp/{dataset}_{backend}.obj")
+
     def track_overall_accuracy_circuit_qnn_classifier(self, _, __):
         """Tracks the overall accuracy of the classification results."""
-        acc_score = accuracy_score(self.y_test, self.y_predict)
+        acc_score = accuracy_score(self.y_test.argmax(axis=1), self.y_predict.argmax(axis=1))
         return acc_score
 
     def track_cohen_kappa_circuit_qnn_clasifier(self, _, __):
         """Tracks the cohen kappa score of the classification results."""
-        cohen_kappa = cohen_kappa_score(self.y_test, self.y_predict)
+        cohen_kappa = cohen_kappa_score(self.y_test.argmax(axis=1), self.y_predict.argmax(axis=1))
         return cohen_kappa
 
     def track_f1_score_circuit_qnn_classifier(self, _, __):
         """Tracks the f1 score for each class of the classification results."""
-        f1 = f1_score(self.y_test, self.y_predict, average="macro")
+        f1 = f1_score(self.y_test.argmax(axis=1), self.y_predict.argmax(axis=1), average="macro")
         return f1
 
 

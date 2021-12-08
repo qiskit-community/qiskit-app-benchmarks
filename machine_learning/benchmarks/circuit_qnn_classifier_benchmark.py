@@ -13,14 +13,14 @@
 """Circuit QNN Classifier benchmarks."""
 from itertools import product
 from timeit import timeit
-from sklearn.preprocessing import MinMaxScaler
 
-
+from joblib import dump, load
 from qiskit import QuantumCircuit
-from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
 from qiskit.algorithms.optimizers import NELDER_MEAD
-from qiskit_machine_learning.neural_networks import CircuitQNN
+from qiskit.circuit.library import RealAmplitudes, ZZFeatureMap
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
+from qiskit_machine_learning.neural_networks import CircuitQNN
+from sklearn.preprocessing import MinMaxScaler
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
 from .base_classifier_benchmark import BaseClassifierBenchmark
@@ -70,7 +70,13 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
         self.circuit_classifier_fitted = NeuralNetworkClassifier(
             neural_network=self.circuit_qnn, optimizer=NELDER_MEAD()
         )
-        self.circuit_classifier_fitted.fit(X, y)
+
+        try:
+            self.circuit_classifier_fitted._fit_result = load(
+                f"/tmp/dataset_synthetic_classification_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.circuit_classifier_fitted.fit(X, y)
 
     def setup_dataset_iris(self, X, y, num_inputs, quantum_instance_name):
         """Training CircuitQNN function for iris dataset."""
@@ -109,7 +115,12 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
             optimizer=NELDER_MEAD(),
         )
 
-        self.circuit_classifier_fitted.fit(X, y)
+        try:
+            self.circuit_classifier_fitted._fit_result = load(
+                f"/tmp/dataset_iris_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.circuit_classifier_fitted.fit(X, y)
 
     def setup(self, dataset, quantum_instance_name):
         """Setup"""
@@ -122,6 +133,13 @@ class CircuitQnnClassifierBenchmarks(BaseClassifierBenchmark):
             self.setup_dataset_synthetic(self.X, self.y01, num_inputs, quantum_instance_name)
         elif dataset == "dataset_iris":
             self.setup_dataset_iris(self.X, self.y01, num_inputs, quantum_instance_name)
+
+    def setup_cache(self):
+        """Cache CircuitQNN fitted model"""
+        for dataset, backend in product(*self.params):
+            self.setup(dataset, backend)
+
+            dump(self.circuit_classifier_fitted._fit_result, f"/tmp/{dataset}_{backend}.obj")
 
     def time_score_circuit_qnn_classifier(self, _, __):
         """Time scoring CircuitQNN classifier on data."""

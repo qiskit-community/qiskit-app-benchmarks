@@ -14,6 +14,7 @@
 from itertools import product
 
 import numpy as np
+from joblib import dump, load
 from qiskit.algorithms.optimizers import COBYLA
 from qiskit.circuit.library import RealAmplitudes, ZFeatureMap
 from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
@@ -48,7 +49,13 @@ class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
         )
 
         self.opflow_classifier_fitted = NeuralNetworkClassifier(opflow_qnn, optimizer=COBYLA())
-        self.opflow_classifier_fitted.fit(X_train, y_train)
+
+        try:
+            self.opflow_classifier_fitted._fit_result = load(
+                f"/tmp/dataset_synthetic_classification_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.opflow_classifier_fitted.fit(X_train, y_train)
 
         self.y_predict = self.opflow_classifier_fitted.predict(X_test)
 
@@ -66,7 +73,14 @@ class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
         )
 
         self.opflow_classifier_fitted = NeuralNetworkClassifier(opflow_qnn, optimizer=COBYLA())
-        self.opflow_classifier_fitted.fit(X_train, y_train)
+
+        try:
+            self.opflow_classifier_fitted._fit_result = load(
+                f"/tmp/dataset_iris_{quantum_instance_name}.obj"
+            )
+        except FileNotFoundError:
+            self.opflow_classifier_fitted.fit(X_train, y_train)
+
         self.y_predict = self.opflow_classifier_fitted.predict(X_test)
 
     def setup(self, dataset, quantum_instance_name):
@@ -100,6 +114,13 @@ class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
             self.setup_dataset_iris(
                 self.X_train, self.X_test, self.y_train, num_inputs, quantum_instance_name
             )
+
+    def setup_cache(self):
+        """Cache Opflow fitted model"""
+        for dataset, backend in product(*self.params):
+            self.setup(dataset, backend)
+
+            dump(self.opflow_classifier_fitted._fit_result, f"/tmp/{dataset}_{backend}.obj")
 
     def track_overall_accuracy_circuit_qnn_classifier(self, _, __):
         """Tracks the overall accuracy of the classification results."""
