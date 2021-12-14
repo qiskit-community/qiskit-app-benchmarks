@@ -31,7 +31,7 @@ class BinPackingBenchmarks:
     """Bin Packing benchmarks"""
 
     version = 1
-    params = ([2, 3], [2, 4, 8])
+    params = ([2, 3], [2, 4, 6])
     param_names = ["number of items", "max_weight"]
 
     def setup(self, num_items, max_weight):
