@@ -9,21 +9,18 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
-
 """Neural Network Regressor benchmarks."""
+
 from itertools import product
 from timeit import timeit
 
-from qiskit import QuantumCircuit
 from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B, NELDER_MEAD
-from qiskit.circuit import Parameter
-from qiskit.circuit.library import EfficientSU2, ZFeatureMap
-from qiskit_machine_learning.algorithms.regressors import NeuralNetworkRegressor
-from qiskit_machine_learning.neural_networks import TwoLayerQNN
-from sklearn.preprocessing import MinMaxScaler
 
-# pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
-from .base_regressor_benchmark import BaseRegressorBenchmark
+from .base_regressor_benchmark import (
+    BaseRegressorBenchmark,
+    DATASET_SYNTHETIC_REGRESSION,
+    DATASET_CCPP_REGRESSION,
+)
 
 
 class OpflowQnnFitRegressorBenchmarks(BaseRegressorBenchmark):
@@ -32,7 +29,7 @@ class OpflowQnnFitRegressorBenchmarks(BaseRegressorBenchmark):
     version = 1
     timeout = 1200.0
     params = (
-        ["dataset_synthetic_regression", "dataset_ccpp"],
+        [DATASET_SYNTHETIC_REGRESSION, DATASET_CCPP_REGRESSION],
         ["qasm_simulator", "statevector_simulator"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
     )
@@ -40,75 +37,45 @@ class OpflowQnnFitRegressorBenchmarks(BaseRegressorBenchmark):
 
     def __init__(self):
         super().__init__()
-        self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
+        self.optimizers = {
+            "cobyla": COBYLA(maxiter=100),
+            "nelder-mead": NELDER_MEAD(maxiter=50),
+            "l-bfgs-b": L_BFGS_B(maxiter=20),
+        }
+        self.train_features = None
+        self.train_labels = None
+        self.model = None
 
-    def setup_dataset_synthetic_regression(self, quantum_instance_name, optimizer):
-        """Training Opflow QNN function for synthetic regression dataset."""
+    def setup(self, dataset: str, quantum_instance_name: str, optimizer: str):
+        """Setup the benchmark."""
+        self.train_features = self.datasets[dataset]["train_features"]
+        self.train_labels = self.datasets[dataset]["train_labels"]
 
-        num_inputs = 1
+        if dataset == DATASET_SYNTHETIC_REGRESSION:
+            self.model = self._construct_qnn_synthetic(
+                quantum_instance_name, self.optimizers[optimizer]
+            )
+        elif dataset == DATASET_CCPP_REGRESSION:
+            self.model = self._construct_qnn_ccpp(quantum_instance_name, self.optimizers[optimizer])
 
-        # construct simple feature map
-        param_x = Parameter("x")
-        feature_map = QuantumCircuit(1, name="fm")
-        feature_map.ry(param_x, 0)
-
-        # construct simple ansatz
-        param_y = Parameter("y")
-        ansatz = QuantumCircuit(1, name="vf")
-        ansatz.ry(param_y, 0)
-
-        opflow_qnn = TwoLayerQNN(
-            num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name]
-        )
-
-        self.opflow_regressor_fitted = NeuralNetworkRegressor(
-            opflow_qnn, optimizer=self.optimizers[optimizer]
-        )
-
-    def setup_dataset_ccpp(self, X, y, quantum_instance_name, optimizer):
-        """Training Opflow QNN for CCPP dataset."""
-
-        scaler = MinMaxScaler((-1, 1))
-        X = scaler.fit_transform(X)
-        y = scaler.fit_transform(y.reshape(-1, 1))
-
-        num_inputs = 4
-        feature_map = ZFeatureMap(num_inputs)
-        ansatz = EfficientSU2(num_inputs)
-
-        opflow_qnn = TwoLayerQNN(
-            num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name]
-        )
-
-        self.opflow_regressor_fitted = NeuralNetworkRegressor(
-            opflow_qnn, optimizer=self.optimizers[optimizer]
-        )
-
-    def setup(self, dataset, quantum_instance_name, optimizer):
-        """setup"""
-
-        self.X = self.datasets[dataset]["features"]
-        self.y = self.datasets[dataset]["labels"]
-
-        if dataset == "dataset_synthetic_regression":
-            self.setup_dataset_synthetic_regression(quantum_instance_name, optimizer)
-        elif dataset == "dataset_ccpp":
-            self.setup_dataset_ccpp(self.X, self.y, quantum_instance_name, optimizer)
-
+    # pylint: disable=invalid-name
     def time_fit_opflow_qnn_regressor(self, _, __, ___):
         """Time fitting OpflowQNN regressor to data."""
-
-        self.opflow_regressor_fitted.fit(self.X, self.y)
+        self.model.fit(self.train_features, self.train_labels)
 
 
 if __name__ == "__main__":
-    for dataset, backend, optimizer in product(*OpflowQnnFitRegressorBenchmarks.params):
+    for dataset_name, backend, optimizer_name in product(*OpflowQnnFitRegressorBenchmarks.params):
         bench = OpflowQnnFitRegressorBenchmarks()
         try:
-            bench.setup(dataset, backend, optimizer)
+            bench.setup(dataset_name, backend, optimizer_name)
         except NotImplementedError:
             continue
 
         for method in ["time_fit_opflow_qnn_regressor"]:
-            elapsed = timeit(f"bench.{method}(None, None, None)", number=10, globals=globals())
+            elapsed = timeit(
+                f'bench.{method}("{dataset_name}", "{backend}", "{optimizer_name}")',
+                number=10,
+                globals=globals(),
+            )
             print(f"{method}:\t{elapsed}")

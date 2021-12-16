@@ -13,6 +13,8 @@
 """Dataset definitions for machine learning benchmarks"""
 
 import pathlib
+from typing import Tuple
+
 import numpy as np
 import pandas as pd
 
@@ -77,13 +79,18 @@ DATASET_SYNTHETIC_REGRESSION_LABELS = np.array(
 )
 
 
-# Combined Cycle Power Plant Data Set
-# https://archive.ics.uci.edu/ml/datasets/Combined+Cycle+Power+Plant
-abs_path = pathlib.Path(__file__).parent.resolve()
-ccpp_df = pd.read_csv(f"{abs_path}/CCPP_data.csv")
-ccpp_features = ccpp_df[["AT", "V", "AP", "RH"]]
-ccpp_labels = ccpp_df["PE"]
+def load_ccpp() -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Loads the Combined Cycle Power Plant dataset. See the `UCI Machine Learning Repository
+    <https://archive.ics.uci.edu/ml/datasets/Combined+Cycle+Power+Plant>`_ web site for more
+    details.
 
-DATASET_CCPP_REGRESSION_FEATURES = ccpp_features[:35].to_numpy()
-
-DATASET_CCPP_REGRESSION_LABELS = ccpp_labels[:35].to_numpy()
+    Returns:
+        a tuple with features and labels as numpy arrays.
+    """
+    # we run a temp directory, but we have to reference a file with the dataset
+    abs_path = pathlib.Path(__file__).parent.resolve()
+    ccpp_df = pd.read_csv(f"{abs_path}/CCPP_data.csv")
+    ccpp_features = ccpp_df[["AT", "V", "AP", "RH"]].to_numpy()
+    ccpp_labels = ccpp_df["PE"].to_numpy()
+    return ccpp_features, ccpp_labels

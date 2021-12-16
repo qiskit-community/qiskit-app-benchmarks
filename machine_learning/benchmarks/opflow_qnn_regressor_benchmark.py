@@ -9,23 +9,20 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
+"""Opflow based Neural Network Regressor benchmarks."""
 
-"""Neural Network Regressor benchmarks."""
+import pickle
 from itertools import product
 from timeit import timeit
-from joblib import dump, load
 
-from qiskit import QuantumCircuit
-from qiskit.algorithms.optimizers import L_BFGS_B
 from qiskit.algorithms.optimizers.cobyla import COBYLA
-from qiskit.circuit import Parameter
-from qiskit.circuit.library import EfficientSU2, ZFeatureMap
-from qiskit_machine_learning.algorithms.regressors import NeuralNetworkRegressor
-from qiskit_machine_learning.neural_networks import TwoLayerQNN
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
-# pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
-from .base_regressor_benchmark import BaseRegressorBenchmark
+from .base_regressor_benchmark import (
+    BaseRegressorBenchmark,
+    DATASET_SYNTHETIC_REGRESSION,
+    DATASET_CCPP_REGRESSION,
+)
 
 
 class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
@@ -34,103 +31,102 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
     version = 1
     timeout = 1200.0
     params = [
-        ["dataset_synthetic_regression", "dataset_ccpp"],
+        [DATASET_SYNTHETIC_REGRESSION, DATASET_CCPP_REGRESSION],
         ["qasm_simulator", "statevector_simulator"],
     ]
     param_names = ["dataset", "backend name"]
 
-    def setup_dataset_synthetic_regression(self, quantum_instance_name):
-        """Training Opflow QNN function for synthetic regression dataset."""
-
-        num_inputs = 1
-        # construct simple feature map
-        param_x = Parameter("x")
-        feature_map = QuantumCircuit(1, name="fm")
-        feature_map.ry(param_x, 0)
-
-        # construct simple ansatz
-        param_y = Parameter("y")
-        ansatz = QuantumCircuit(1, name="vf")
-        ansatz.ry(param_y, 0)
-
-        opflow_qnn = TwoLayerQNN(
-            num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name]
-        )
-
-        self.opflow_regressor_fitted = NeuralNetworkRegressor(opflow_qnn, optimizer=COBYLA())
-
-        try:
-            self.opflow_regressor_fitted._fit_result = load(
-                f"/tmp/dataset_synthetic_regression_{quantum_instance_name}.obj"
-            )
-        except FileNotFoundError:
-            self.opflow_regressor_fitted.fit(self.X, self.y)
-
-    def setup_dataset_ccpp(self, X, y, quantum_instance_name):
-        """Training Opflow QNN for CCPP dataset."""
-
-        scaler = MinMaxScaler((-1, 1))
-        X = scaler.fit_transform(X)
-        y = scaler.fit_transform(y.reshape(-1, 1))
-
-        num_inputs = 4
-        feature_map = ZFeatureMap(num_inputs)
-        ansatz = EfficientSU2(num_inputs)
-
-        opflow_qnn = TwoLayerQNN(
-            num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name]
-        )
-
-        self.opflow_regressor_fitted = NeuralNetworkRegressor(opflow_qnn, optimizer=L_BFGS_B())
-
-        try:
-            self.opflow_regressor_fitted._fit_result = load(
-                f"/tmp/dataset_ccpp_{quantum_instance_name}.obj"
-            )
-        except FileNotFoundError:
-            self.opflow_regressor_fitted.fit(self.X, self.y)
-
-    def setup(self, dataset, quantum_instance_name):
-        """setup"""
-
-        self.X = self.datasets[dataset]["features"]
-        self.y = self.datasets[dataset]["labels"]
-
-        if dataset == "dataset_synthetic_regression":
-            self.setup_dataset_synthetic_regression(quantum_instance_name)
-        elif dataset == "dataset_ccpp":
-            self.setup_dataset_ccpp(self.X, self.y, quantum_instance_name)
+    def __init__(self):
+        super().__init__()
+        self.model = None
+        self.train_features = None
+        self.train_labels = None
+        self.test_features = None
+        self.test_labels = None
 
     def setup_cache(self):
         """Cache Opflow fitted model"""
         for dataset, backend in product(*self.params):
-            self.setup(dataset, backend)
+            train_features = self.datasets[dataset]["train_features"]
+            train_labels = self.datasets[dataset]["train_labels"]
 
-            dump(self.opflow_regressor_fitted._fit_result, f"/tmp/{dataset}_{backend}.obj")
+            if dataset == DATASET_SYNTHETIC_REGRESSION:
+                model = self._construct_qnn_synthetic(
+                    quantum_instance_name=backend, optimizer=COBYLA()
+                )
+            else:
+                # we have only two dataset for now, so this clause is for "dataset_ccpp"
+                model = self._construct_qnn_ccpp(
+                    quantum_instance_name=backend, optimizer=COBYLA(maxiter=100)
+                )
+            model.fit(train_features, train_labels)
 
+            file_name = f"{dataset}_{backend}.pickle"
+            with open(file_name, "wb") as file:
+                pickle.dump(model._fit_result, file)
+
+    def setup(self, dataset: str, quantum_instance_name: str):
+        """Setup the benchmark."""
+
+        self.train_features = self.datasets[dataset]["train_features"]
+        self.train_labels = self.datasets[dataset]["train_labels"]
+        self.test_features = self.datasets[dataset]["test_features"]
+        self.test_labels = self.datasets[dataset]["test_labels"]
+
+        if dataset == DATASET_SYNTHETIC_REGRESSION:
+            self.model = self._construct_qnn_synthetic(quantum_instance_name=quantum_instance_name)
+        else:
+            # we have only two dataset for now, so this is for "dataset_ccpp"
+            self.model = self._construct_qnn_ccpp(quantum_instance_name=quantum_instance_name)
+
+        file_name = f"{dataset}_{quantum_instance_name}.pickle"
+        with open(file_name, "rb") as file:
+            self.model._fit_result = pickle.load(file)
+
+    # pylint: disable=invalid-name
     def time_score_opflow_qnn_regressor(self, _, __):
         """Time scoring OpflowQNN regressor on data."""
-
-        self.opflow_regressor_fitted.score(self.X, self.y)
+        self.model.score(self.train_features, self.train_labels)
 
     def time_predict_opflow_qnn_regressor(self, _, __):
         """Time predicting with regressor OpflowQNN."""
+        self.model.predict(self.train_features)
 
-        y_predict = self.opflow_regressor_fitted.predict(self.X)
-        return y_predict
+    def track_score_opflow_qnn_regressor(self, _, __):
+        """R2 score of the model on data."""
+        score = self.model.score(self.test_features, self.test_labels)
+        return score
+
+    def track_mae_opflow_qnn_regressor(self, _, __):
+        """Mean absolute error of the model on data."""
+        predicts = self.model.predict(self.test_features)
+        mae = mean_absolute_error(y_true=self.test_labels, y_pred=predicts)
+        return mae
+
+    def track_mse_opflow_qnn_regressor(self, _, __):
+        """Mean squared error of the model on data."""
+        predicts = self.model.predict(self.test_features)
+        mse = mean_squared_error(y_true=self.test_labels, y_pred=predicts)
+        return mse
 
 
 if __name__ == "__main__":
-    for dataset, backend in product(*OpflowQnnRegressorBenchmarks.params):
-        bench = OpflowQnnRegressorBenchmarks()
+    bench = OpflowQnnRegressorBenchmarks()
+    bench.setup_cache()
+    for dataset_name, backend_name in product(*OpflowQnnRegressorBenchmarks.params):
         try:
-            bench.setup(dataset, backend)
+            bench.setup(dataset_name, backend_name)
         except NotImplementedError:
             continue
 
         for method in (
             "time_score_opflow_qnn_regressor",
             "time_predict_opflow_qnn_regressor",
+            "track_score_opflow_qnn_regressor",
+            "track_mae_opflow_qnn_regressor",
+            "track_mse_opflow_qnn_regressor",
         ):
-            elapsed = timeit(f"bench.{method}(None, None)", number=10, globals=globals())
+            elapsed = timeit(
+                f'bench.{method}("{dataset_name}", "{backend_name}")', number=10, globals=globals()
+            )
             print(f"{method}:\t{elapsed}")
