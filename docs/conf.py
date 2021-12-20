@@ -25,20 +25,21 @@
 #
 import os
 import sys
-sys.path.append(os.path.abspath('.'))
+
+sys.path.append(os.path.abspath("."))
 
 """
 Sphinx documentation builder
 """
 
 # -- Project information -----------------------------------------------------
-project = 'Qiskit Application Benchmarks'
-copyright = '2021, Qiskit Development Team'  # pylint: disable=redefined-builtin
-author = 'Qiskit Development Team'
+project = "Qiskit Application Benchmarks"
+copyright = "2021, Qiskit Development Team"  # pylint: disable=redefined-builtin
+author = "Qiskit Development Team"
 
 # -- General configuration ---------------------------------------------------
 
-master_doc = 'index'
+master_doc = "index"
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
@@ -48,7 +49,7 @@ master_doc = 'index'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.githubpages',
+    "sphinx.ext.githubpages",
 ]
 
 spelling_word_list_filename = "../.pylintdict"
@@ -67,7 +68,7 @@ language = None
 exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'colorful'
+pygments_style = "colorful"
 
 # A boolean that decides whether module names are prepended to all object names
 # (for object types where a “module” of some kind is defined), e.g. for
@@ -90,7 +91,7 @@ modindex_common_prefix = []
 # a list of builtin themes.
 #
 #
-html_theme = 'alabaster'
+html_theme = "alabaster"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -98,7 +99,6 @@ html_theme = 'alabaster'
 #
 html_theme_options = {
     # Disable showing the sidebar. Defaults to 'false'
-    'nosidebar': True,
+    "nosidebar": True,
     "show_powered_by": False,
 }
-

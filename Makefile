@@ -30,10 +30,10 @@ mypy:
 	python -m mypy finance machine_learning nature optimization tools
 
 style:
-	python -m black --check --exclude=".asv" finance machine_learning nature optimization tools
+	python -m black --check --exclude=".asv" finance machine_learning nature optimization tools docs
 
 black:
-	python -m black --exclude=".asv" finance machine_learning nature optimization tools
+	python -m black --exclude=".asv" finance machine_learning nature optimization tools docs
 
 spell:
 	python -m pylint -rn --disable=all --enable=spelling --spelling-dict=en_US --spelling-private-dict-file=.pylintdict --ignore=.asv finance machine_learning nature optimization tools
