@@ -45,7 +45,7 @@ class VersionChecker:
             fullname = package + "." + name
             modspec = importlib.util.find_spec(fullname)  # type: ignore
             mod = importlib.util.module_from_spec(modspec)  # type: ignore
-            modspec.loader.exec_module(mod)  # type: ignore
+            modspec.loader.exec_module(mod)
             for _, cls in inspect.getmembers(mod, inspect.isclass):
                 # Iterate through the classes defined on the module.
                 if cls.__module__ == modspec.name:
