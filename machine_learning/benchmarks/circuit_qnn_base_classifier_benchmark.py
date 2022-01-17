@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 
 """Base for CircuitQNN based Classifier benchmarks."""
+from abc import ABC
 from typing import Optional, Callable
 
 import numpy as np
@@ -31,7 +32,7 @@ from .datasets import (
 )
 
 
-class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark):
+class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
     """Base for CircuitQNN Classifier benchmarks."""
 
     def __init__(self):

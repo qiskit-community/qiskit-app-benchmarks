@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 
 """Base for Opflow based classifier benchmarks."""
+from abc import ABC
 from typing import Optional
 
 import numpy as np
@@ -30,7 +31,7 @@ from .datasets import (
 )
 
 
-class OpflowQnnBaseClassifierBenchmark(BaseClassifierBenchmark):
+class OpflowQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
     """Base for Opflow Classifier benchmarks."""
 
     def __init__(self):

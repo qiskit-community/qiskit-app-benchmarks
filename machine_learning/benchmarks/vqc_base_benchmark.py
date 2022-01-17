@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 
 """Base for VQC based classifier benchmarks."""
+from abc import ABC
 from typing import Optional
 
 import numpy as np
@@ -29,7 +30,7 @@ from .datasets import (
 )
 
 
-class VqcBaseClassifierBenchmark(BaseClassifierBenchmark):
+class VqcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
     """Base for Opflow Classifier benchmarks."""
 
     def __init__(self):
@@ -103,7 +104,7 @@ class VqcBaseClassifierBenchmark(BaseClassifierBenchmark):
         self,
         quantum_instance_name: str,
         optimizer: Optional[Optimizer] = None,
-        loss_function: str = None,
+        loss_function: str = "cross_entropy",
     ) -> NeuralNetworkClassifier:
         """Training a VQC classifier for synthetic classification dataset."""
         return self._construct_vqc_classifier(2, quantum_instance_name, optimizer, loss_function)
@@ -112,7 +113,7 @@ class VqcBaseClassifierBenchmark(BaseClassifierBenchmark):
         self,
         quantum_instance_name: str,
         optimizer: Optional[Optimizer] = None,
-        loss_function: str = None,
+        loss_function: str = "cross_entropy",
     ) -> NeuralNetworkClassifier:
         """Construct a VQC classifier for iris classification dataset."""
         return self._construct_vqc_classifier(4, quantum_instance_name, optimizer, loss_function)
