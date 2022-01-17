@@ -1,6 +1,6 @@
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2021.
+# (C) Copyright IBM 2021, 2022.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -9,133 +9,131 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
+"""Opflow Neural Network Classifier benchmarks."""
 
-"""Neural Network Classifier benchmarks."""
+import pickle
 from itertools import product
 from timeit import timeit
 
-import numpy as np
-from joblib import dump, load
 from qiskit.algorithms.optimizers import COBYLA
-from qiskit.circuit.library import ZFeatureMap
-from qiskit.circuit.library.n_local.real_amplitudes import RealAmplitudes
-from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
-from qiskit_machine_learning.neural_networks import TwoLayerQNN
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import precision_score, recall_score, f1_score
 
-# pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
-from .base_classifier_benchmark import BaseClassifierBenchmark
+from .opflow_qnn_base_classifier_benchmark import OpflowQnnBaseClassifierBenchmark
+from .base_classifier_benchmark import (
+    DATASET_SYNTHETIC_CLASSIFICATION,
+    DATASET_IRIS_CLASSIFICATION,
+)
 
 
-class OpflowQnnClassifierBenchmarks(BaseClassifierBenchmark):
+class OpflowQnnClassifierBenchmarks(OpflowQnnBaseClassifierBenchmark):
     """Opflow QNN Classifier benchmarks."""
 
-    version = 1
+    version = 2
     timeout = 1200.0
     params = [
-        ["dataset_synthetic", "dataset_iris"],
+        [DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION],
         ["qasm_simulator", "statevector_simulator"],
     ]
     param_names = ["dataset", "backend name"]
 
-    def setup_dataset_synthetic(self, X, y, quantum_instance_name):
-        """Training TwoLayerQNN for synthetic classification dataset."""
+    def __init__(self):
+        super().__init__()
+        self.train_features = None
+        self.train_labels = None
+        self.test_features = None
+        self.test_labels = None
+        self.model = None
 
-        num_inputs = len(X[0])
-        self.y = 2 * y - 1  # in {-1, +1}
+    def setup(self, dataset: str, quantum_instance_name: str):
+        """Setup the benchmark."""
 
-        feature_map = ZFeatureMap(num_inputs)
-        ansatz = RealAmplitudes(num_inputs)
+        self.train_features = self.datasets[dataset]["train_features"]
+        self.train_labels = self.datasets[dataset]["train_labels"]
+        self.test_features = self.datasets[dataset]["test_features"]
+        self.test_labels = self.datasets[dataset]["test_labels"]
 
-        opflow_qnn = TwoLayerQNN(
-            num_inputs,
-            feature_map=feature_map,
-            ansatz=ansatz,
-            quantum_instance=self.backends[quantum_instance_name],
-        )
-
-        self.opflow_classifier_fitted = NeuralNetworkClassifier(opflow_qnn, optimizer=COBYLA())
-
-        try:
-            self.opflow_classifier_fitted._fit_result = load(
-                f"/tmp/dataset_synthetic_classification_{quantum_instance_name}.obj"
+        if dataset == DATASET_SYNTHETIC_CLASSIFICATION:
+            self.model = self._construct_opflow_classifier_synthetic(
+                quantum_instance_name=quantum_instance_name
             )
-        except FileNotFoundError:
-            self.opflow_classifier_fitted.fit(self.X, self.y)
-
-    def setup_dataset_iris(self, X, y, quantum_instance_name):
-        """Training TwoLayerQNN for iris classification dataset."""
-
-        num_inputs = len(X[0])
-
-        # keeping only two classes as TwoLayerQNN only supports binary classification
-        idx_binary_class = np.where(y != 2)[0]
-        self.X = X[idx_binary_class]
-        self.y = y[idx_binary_class]
-
-        feature_map = ZFeatureMap(num_inputs)
-        ansatz = RealAmplitudes(num_inputs)
-
-        opflow_qnn = TwoLayerQNN(
-            num_inputs,
-            feature_map=feature_map,
-            ansatz=ansatz,
-            quantum_instance=self.backends[quantum_instance_name],
-        )
-
-        self.opflow_classifier_fitted = NeuralNetworkClassifier(opflow_qnn, optimizer=COBYLA())
-
-        try:
-            self.opflow_classifier_fitted._fit_result = load(
-                f"/tmp/dataset_iris_{quantum_instance_name}.obj"
+        else:
+            # we have only two dataset for now, so this is for "iris"
+            self.model = self._construct_opflow_classifier_iris(
+                quantum_instance_name=quantum_instance_name
             )
-        except FileNotFoundError:
-            self.opflow_classifier_fitted.fit(self.X, self.y)
 
-    def setup(self, dataset, quantum_instance_name):
-        """setup"""
-
-        self.X = self.datasets[dataset]["features"]
-        self.y = self.datasets[dataset]["labels"]
-
-        if dataset == "dataset_synthetic":
-            self.setup_dataset_synthetic(self.X, self.y, quantum_instance_name)
-        elif dataset == "dataset_iris":
-            scaler = MinMaxScaler((-1, 1))
-            self.X = scaler.fit_transform(self.X)
-
-            self.setup_dataset_iris(self.X, self.y, quantum_instance_name)
+        file_name = f"opflow_qnn_{dataset}_{quantum_instance_name}.pickle"
+        with open(file_name, "rb") as file:
+            self.model._fit_result = pickle.load(file)
 
     def setup_cache(self):
-        """Cache Opflow fitted model"""
+        """Cache CircuitQNN fitted model"""
         for dataset, backend in product(*self.params):
-            self.setup(dataset, backend)
+            train_features = self.datasets[dataset]["train_features"]
+            train_labels = self.datasets[dataset]["train_labels"]
 
-            dump(self.opflow_classifier_fitted._fit_result, f"/tmp/{dataset}_{backend}.obj")
+            if dataset == DATASET_SYNTHETIC_CLASSIFICATION:
+                model = self._construct_opflow_classifier_synthetic(
+                    quantum_instance_name=backend, optimizer=COBYLA(maxiter=200)
+                )
+            else:
+                # we have only two dataset for now, so this clause is for "iris"
+                model = self._construct_opflow_classifier_iris(
+                    quantum_instance_name=backend, optimizer=COBYLA(maxiter=200)
+                )
+            model.fit(train_features, train_labels)
 
+            file_name = f"opflow_qnn_{dataset}_{backend}.pickle"
+            with open(file_name, "wb") as file:
+                pickle.dump(model._fit_result, file)
+
+    # pylint: disable=invalid-name
     def time_score_opflow_qnn_classifier(self, _, __):
         """Time scoring OpflowQNN classifier on data."""
-
-        self.opflow_classifier_fitted.score(self.X, self.y)
+        self.model.score(self.train_features, self.train_labels)
 
     def time_predict_opflow_qnn_classifier(self, _, __):
         """Time predicting with classifier OpflowQNN."""
+        self.model.predict(self.train_features)
 
-        y_predict = self.opflow_classifier_fitted.predict(self.X)
-        return y_predict
+    def track_accuracy_score_opflow_qnn_classifier(self, _, __):
+        """Tracks the overall accuracy of the classification results."""
+        return self.model.score(self.test_features, self.test_labels)
+
+    def track_precision_score_opflow_qnn_classifier(self, _, __):
+        """Tracks the precision score."""
+        predicts = self.model.predict(self.test_features)
+        return precision_score(y_true=self.test_labels, y_pred=predicts, average="micro")
+
+    def track_recall_score_opflow_qnn_classifier(self, _, __):
+        """Tracks the recall score for each class of the classification results."""
+        predicts = self.model.predict(self.test_features)
+        return recall_score(y_true=self.test_labels, y_pred=predicts, average="micro")
+
+    def track_f1_score_opflow_qnn_classifier(self, _, __):
+        """Tracks the f1 score for each class of the classification results."""
+        predicts = self.model.predict(self.test_features)
+        return f1_score(y_true=self.test_labels, y_pred=predicts, average="micro")
 
 
 if __name__ == "__main__":
-    for dataset, backend in product(*OpflowQnnClassifierBenchmarks.params):
-        bench = OpflowQnnClassifierBenchmarks()
+    bench = OpflowQnnClassifierBenchmarks()
+    bench.setup_cache()
+    for dataset_name, backend_name in product(*OpflowQnnClassifierBenchmarks.params):
         try:
-            bench.setup(dataset, backend)
+            bench.setup(dataset_name, backend_name)
         except NotImplementedError:
             continue
 
         for method in (
             "time_score_opflow_qnn_classifier",
             "time_predict_opflow_qnn_classifier",
+            "track_accuracy_score_opflow_qnn_classifier",
+            "track_precision_score_opflow_qnn_classifier",
+            "track_recall_score_opflow_qnn_classifier",
+            "track_f1_score_opflow_qnn_classifier",
         ):
-            elapsed = timeit(f"bench.{method}(None, None)", number=10, globals=globals())
+            elapsed = timeit(
+                f'bench.{method}("{dataset_name}", "{backend_name}")', number=10, globals=globals()
+            )
             print(f"{method}:\t{elapsed}")

@@ -1,6 +1,6 @@
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2021.
+# (C) Copyright IBM 2021, 2022.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -9,29 +9,27 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
+"""Opflow Neural Network Classifier fit benchmarks."""
 
-"""Neural Network Classifier benchmarks."""
 from itertools import product
 from timeit import timeit
 
-import numpy as np
 from qiskit.algorithms.optimizers import COBYLA, NELDER_MEAD, L_BFGS_B
-from qiskit.circuit.library import ZFeatureMap
-from qiskit.circuit.library.n_local.real_amplitudes import RealAmplitudes
-from qiskit_machine_learning.neural_networks import TwoLayerQNN
-from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 
-# pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
-from .base_classifier_benchmark import BaseClassifierBenchmark
+from .base_classifier_benchmark import (
+    DATASET_SYNTHETIC_CLASSIFICATION,
+    DATASET_IRIS_CLASSIFICATION,
+)
+from .opflow_qnn_base_classifier_benchmark import OpflowQnnBaseClassifierBenchmark
 
 
-class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
+class OpflowQnnFitClassifierBenchmarks(OpflowQnnBaseClassifierBenchmark):
     """Opflow QNN Classifier benchmarks."""
 
-    version = 1
+    version = 2
     timeout = 1200.0
     params = (
-        ["dataset_synthetic", "dataset_iris"],
+        [DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION],
         ["qasm_simulator", "statevector_simulator"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
     )
@@ -39,79 +37,54 @@ class OpflowQnnFitClassifierBenchmarks(BaseClassifierBenchmark):
 
     def __init__(self):
         super().__init__()
-        self.optimizers = {"cobyla": COBYLA(), "nelder-mead": NELDER_MEAD(), "l-bfgs-b": L_BFGS_B()}
 
-    def setup_dataset_synthetic_classification(self, X, y, quantum_instance_name, optimizer_name):
-        """Training TwoLayerQNN for synthetic classification dataset."""
+        self.optimizers = {
+            "cobyla": COBYLA(maxiter=100),
+            "nelder-mead": NELDER_MEAD(maxiter=50),
+            "l-bfgs-b": L_BFGS_B(maxiter=20),
+        }
+        self.train_features = None
+        self.train_labels = None
+        self.test_features = None
+        self.test_labels = None
+        self.model = None
 
-        num_inputs = len(X[0])
-        self.y = 2 * y - 1  # in {-1, +1}
+    def setup(self, dataset: str, quantum_instance_name: str, optimizer: str):
+        """Setup the benchmark."""
+        self.train_features = self.datasets[dataset]["train_features"]
+        self.train_labels = self.datasets[dataset]["train_labels"]
 
-        feature_map = ZFeatureMap(num_inputs)
-        ansatz = RealAmplitudes(num_inputs)
-
-        opflow_qnn = TwoLayerQNN(
-            num_inputs,
-            feature_map=feature_map,
-            ansatz=ansatz,
-            quantum_instance=self.backends[quantum_instance_name],
-        )
-
-        self.opflow_classifier = NeuralNetworkClassifier(
-            opflow_qnn, optimizer=self.optimizers[optimizer_name]
-        )
-
-    def setup_dataset_iris(self, X, y, quantum_instance_name, optimizer_name):
-        """Training TwoLayerQNN for iris classification dataset."""
-
-        num_inputs = len(X[0])
-
-        # keeping only two classes as TwoLayerQNN only supports binary classification
-        idx_binary_class = np.where(y != 2)[0]
-        self.X = X[idx_binary_class]
-        self.y = y[idx_binary_class]
-
-        feature_map = ZFeatureMap(num_inputs)
-        ansatz = RealAmplitudes(num_inputs)
-
-        opflow_qnn = TwoLayerQNN(
-            num_inputs,
-            feature_map=feature_map,
-            ansatz=ansatz,
-            quantum_instance=self.backends[quantum_instance_name],
-        )
-
-        self.opflow_classifier = NeuralNetworkClassifier(
-            opflow_qnn, optimizer=self.optimizers[optimizer_name]
-        )
-
-    def setup(self, dataset, quantum_instance_name, optimizer_name):
-        """setup"""
-
-        self.X = self.datasets[dataset]["features"]
-        self.y = self.datasets[dataset]["labels"]
-
-        if dataset == "dataset_synthetic":
-            self.setup_dataset_synthetic_classification(
-                self.X, self.y, quantum_instance_name, optimizer_name
+        if dataset == DATASET_SYNTHETIC_CLASSIFICATION:
+            self.model = self._construct_opflow_classifier_synthetic(
+                quantum_instance_name=quantum_instance_name,
+                optimizer=self.optimizers[optimizer],
             )
-        elif dataset == "dataset_iris":
-            self.setup_dataset_iris(self.X, self.y, quantum_instance_name, optimizer_name)
+        else:
+            self.model = self._construct_opflow_classifier_iris(
+                quantum_instance_name=quantum_instance_name,
+                optimizer=self.optimizers[optimizer],
+            )
 
+    # pylint: disable=invalid-name
     def time_fit_opflow_qnn_classifier(self, _, __, ___):
         """Time fitting OpflowQNN classifier to data."""
-
-        self.opflow_classifier.fit(self.X, self.y)
+        self.model.fit(self.train_features, self.train_labels)
 
 
 if __name__ == "__main__":
-    for dataset, backend, optimizer in product(*OpflowQnnFitClassifierBenchmarks.params):
+    for dataset_name, backend_name, optimizer_name in product(
+        *OpflowQnnFitClassifierBenchmarks.params
+    ):
         bench = OpflowQnnFitClassifierBenchmarks()
         try:
-            bench.setup(dataset, backend, optimizer)
+            bench.setup(dataset_name, backend_name, optimizer_name)
         except NotImplementedError:
             continue
 
         for method in ["time_fit_opflow_qnn_classifier"]:
-            elapsed = timeit(f"bench.{method}(None, None, None)", number=10, globals=globals())
+            elapsed = timeit(
+                f'bench.{method}("{dataset_name}", "{backend_name}", "{optimizer_name}")',
+                number=10,
+                globals=globals(),
+            )
             print(f"{method}:\t{elapsed}")
