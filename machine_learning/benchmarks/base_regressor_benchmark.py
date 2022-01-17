@@ -18,7 +18,7 @@ from qiskit import Aer, QuantumCircuit
 from qiskit.algorithms.optimizers import Optimizer
 from qiskit.circuit import Parameter
 from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
-from qiskit.utils import QuantumInstance
+from qiskit.utils import QuantumInstance, algorithm_globals
 from qiskit_machine_learning.algorithms import NeuralNetworkRegressor
 from qiskit_machine_learning.neural_networks import TwoLayerQNN
 from sklearn.model_selection import train_test_split
@@ -40,9 +40,16 @@ class BaseRegressorBenchmark(ABC):
     def __init__(self):
 
         quantum_instance_statevector = QuantumInstance(
-            Aer.get_backend("statevector_simulator"), shots=1024
+            Aer.get_backend("statevector_simulator"),
+            seed_simulator=algorithm_globals.random_seed,
+            seed_transpiler=algorithm_globals.random_seed,
         )
-        quantum_instance_qasm = QuantumInstance(Aer.get_backend("qasm_simulator"), shots=1024)
+        quantum_instance_qasm = QuantumInstance(
+            Aer.get_backend("qasm_simulator"),
+            shots=1024,
+            seed_simulator=algorithm_globals.random_seed,
+            seed_transpiler=algorithm_globals.random_seed,
+        )
 
         self.backends = {
             "statevector_simulator": quantum_instance_statevector,
