@@ -19,7 +19,8 @@ import numpy as np
 import pandas as pd
 
 # Synthetic dataset for regression is generated as a noisy sine wave.
-# For more details please refer to the "Neural Network Classifier & Regressor" tutorial in QML.
+# For more details please refer to the "Neural Network Classifier & Regressor" tutorial
+# in Qiskit Machine Learning.
 DATASET_SYNTHETIC_REGRESSION_FEATURES = np.array(
     [
         [-1.0],
