@@ -1,6 +1,6 @@
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2021.
+# (C) Copyright IBM 2021, 2022.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -18,6 +18,8 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 
+# Synthetic dataset for regression is generated as a noisy sine wave.
+# For more details please refer to the "Neural Network Classifier & Regressor" tutorial in QML.
 DATASET_SYNTHETIC_REGRESSION_FEATURES = np.array(
     [
         [-1.0],
@@ -88,7 +90,7 @@ def load_ccpp() -> Tuple[np.ndarray, np.ndarray]:
     Returns:
         a tuple with features and labels as numpy arrays.
     """
-    # we run a temp directory, but we have to reference a file with the dataset
+    # the benchmarks are run in a temp directory, but we have to reference a file with the dataset.
     abs_path = pathlib.Path(__file__).parent.resolve()
     ccpp_df = pd.read_csv(f"{abs_path}/CCPP_data.csv")
     ccpp_features = ccpp_df[["AT", "V", "AP", "RH"]].to_numpy()

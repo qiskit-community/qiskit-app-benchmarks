@@ -9,11 +9,12 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
-"""Base class for Regressor benchmarks."""
+"""Base class for regressor benchmarks."""
 
 from abc import ABC
-from typing import Optional
+from typing import Optional, Tuple
 
+import numpy as np
 from qiskit import Aer, QuantumCircuit
 from qiskit.algorithms.optimizers import Optimizer
 from qiskit.circuit import Parameter
@@ -35,9 +36,10 @@ DATASET_CCPP_REGRESSION = "dataset_ccpp"
 
 
 class BaseRegressorBenchmark(ABC):
-    """Base class for Regressor benchmarks."""
+    """Base class for regressor benchmarks."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+
         quantum_instance_statevector = QuantumInstance(
             Aer.get_backend("statevector_simulator"),
             seed_simulator=algorithm_globals.random_seed,
@@ -68,15 +70,7 @@ class BaseRegressorBenchmark(ABC):
             shuffle=False,
         )
 
-        # prepare CCPP dataset, we can afford only a tiny subset of the dataset for training
-        ccpp_features, ccpp_labels = load_ccpp()
-        ccpp_features = ccpp_features[:25]
-        ccpp_labels = ccpp_labels[:25]
-
-        scaler = MinMaxScaler((-1, 1))
-        ccpp_features = scaler.fit_transform(ccpp_features)
-        ccpp_labels = scaler.fit_transform(ccpp_labels.reshape(-1, 1))
-
+        ccpp_features, ccpp_labels = self._prepare_ccpp()
         (
             ccpp_train_features,
             ccpp_test_features,
@@ -98,6 +92,18 @@ class BaseRegressorBenchmark(ABC):
                 "test_labels": ccpp_test_labels,
             },
         }
+
+    def _prepare_ccpp(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Prepare the CCPP dataset, we can afford only a tiny subset of the dataset for training.
+        """
+        ccpp_features, ccpp_labels = load_ccpp()
+        ccpp_features = ccpp_features[:25]
+        ccpp_labels = ccpp_labels[:25]
+        scaler = MinMaxScaler((-1, 1))
+        ccpp_features = scaler.fit_transform(ccpp_features)
+        ccpp_labels = scaler.fit_transform(ccpp_labels.reshape(-1, 1))
+        return ccpp_features, ccpp_labels
 
     def _construct_qnn_synthetic(
         self, quantum_instance_name: str, optimizer: Optional[Optimizer] = None

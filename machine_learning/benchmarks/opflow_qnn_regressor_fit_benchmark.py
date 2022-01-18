@@ -35,7 +35,7 @@ class OpflowQnnFitRegressorBenchmarks(BaseRegressorBenchmark):
     )
     param_names = ["dataset", "backend name", "optimizer"]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.optimizers = {
             "cobyla": COBYLA(maxiter=100),
@@ -57,6 +57,8 @@ class OpflowQnnFitRegressorBenchmarks(BaseRegressorBenchmark):
             )
         elif dataset == DATASET_CCPP_REGRESSION:
             self.model = self._construct_qnn_ccpp(quantum_instance_name, self.optimizers[optimizer])
+        else:
+            raise ValueError(f"Unsupported dataset: {dataset}")
 
     # pylint: disable=invalid-name
     def time_fit_opflow_qnn_regressor(self, _, __, ___):

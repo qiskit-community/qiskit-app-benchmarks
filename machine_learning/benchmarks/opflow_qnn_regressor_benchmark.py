@@ -1,6 +1,6 @@
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2021.
+# (C) Copyright IBM 2021, 2022.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -9,7 +9,7 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
-"""Opflow based Neural Network Regressor benchmarks."""
+"""Opflow based neural network regressor benchmarks."""
 
 import pickle
 from itertools import product
@@ -26,7 +26,7 @@ from .base_regressor_benchmark import (
 
 
 class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
-    """Opflow QNN Regressor benchmarks."""
+    """Opflow QNN regressor benchmarks."""
 
     version = 1
     timeout = 1200.0
@@ -36,7 +36,7 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
     ]
     param_names = ["dataset", "backend name"]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.model = None
         self.train_features = None
@@ -54,18 +54,20 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
                 model = self._construct_qnn_synthetic(
                     quantum_instance_name=backend, optimizer=COBYLA()
                 )
-            else:
-                # we have only two dataset for now, so this clause is for "dataset_ccpp"
+            elif dataset == DATASET_CCPP_REGRESSION:
                 model = self._construct_qnn_ccpp(
                     quantum_instance_name=backend, optimizer=COBYLA(maxiter=100)
                 )
+            else:
+                raise ValueError(f"Unsupported dataset: {dataset}")
+
             model.fit(train_features, train_labels)
 
             file_name = f"{dataset}_{backend}.pickle"
             with open(file_name, "wb") as file:
                 pickle.dump(model._fit_result, file)
 
-    def setup(self, dataset: str, quantum_instance_name: str):
+    def setup(self, dataset: str, quantum_instance_name: str) -> None:
         """Set up the benchmark."""
 
         self.train_features = self.datasets[dataset]["train_features"]
