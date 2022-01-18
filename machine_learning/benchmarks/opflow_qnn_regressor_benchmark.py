@@ -79,9 +79,10 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
 
         if dataset == DATASET_SYNTHETIC_REGRESSION:
             self.model = self._construct_qnn_synthetic(quantum_instance_name=quantum_instance_name)
-        else:
-            # we have only two dataset for now, so this is for "dataset_ccpp"
+        elif dataset == DATASET_CCPP_REGRESSION:
             self.model = self._construct_qnn_ccpp(quantum_instance_name=quantum_instance_name)
+        else:
+            raise ValueError(f"Unsupported dataset: {dataset}")
 
         file_name = f"{dataset}_{quantum_instance_name}.pickle"
         with open(file_name, "rb") as file:
