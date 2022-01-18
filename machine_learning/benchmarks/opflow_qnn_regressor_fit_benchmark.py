@@ -9,7 +9,7 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
-"""Neural Network Regressor benchmarks."""
+"""Neural network regressor benchmarks."""
 
 from itertools import product
 from timeit import timeit
@@ -24,7 +24,7 @@ from .base_regressor_benchmark import (
 
 
 class OpflowQnnFitRegressorBenchmarks(BaseRegressorBenchmark):
-    """OpflowQNN Regressor benchmarks."""
+    """OpflowQNN regressor benchmarks."""
 
     version = 1
     timeout = 1200.0
