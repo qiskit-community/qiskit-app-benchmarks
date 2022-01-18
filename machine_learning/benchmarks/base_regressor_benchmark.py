@@ -35,7 +35,7 @@ DATASET_CCPP_REGRESSION = "dataset_ccpp"
 
 
 class BaseRegressorBenchmark(ABC):
-    """Base for Regressor benchmarks."""
+    """Base class for Regressor benchmarks."""
 
     def __init__(self):
 
