@@ -117,8 +117,7 @@ class BaseRegressorBenchmark(ABC):
             num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name]
         )
 
-        model = NeuralNetworkRegressor(opflow_qnn, optimizer=optimizer)
-        return model
+        return NeuralNetworkRegressor(opflow_qnn, optimizer=optimizer)
 
     def _construct_qnn_ccpp(
         self, quantum_instance_name: str, optimizer: Optional[Optimizer] = None
