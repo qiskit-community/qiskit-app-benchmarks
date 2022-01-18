@@ -24,7 +24,7 @@ from .base_regressor_benchmark import (
 
 
 class OpflowQnnFitRegressorBenchmarks(BaseRegressorBenchmark):
-    """Opflow QNN Regressor benchmarks."""
+    """OpflowQNN Regressor benchmarks."""
 
     version = 1
     timeout = 1200.0
