@@ -9,7 +9,7 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
-"""Base for Regressor benchmarks."""
+"""Base class for Regressor benchmarks."""
 
 from abc import ABC
 from typing import Optional
