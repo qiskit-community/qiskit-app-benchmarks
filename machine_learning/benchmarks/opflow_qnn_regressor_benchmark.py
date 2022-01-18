@@ -66,7 +66,7 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
                 pickle.dump(model._fit_result, file)
 
     def setup(self, dataset: str, quantum_instance_name: str):
-        """Setup the benchmark."""
+        """Set up the benchmark."""
 
         self.train_features = self.datasets[dataset]["train_features"]
         self.train_labels = self.datasets[dataset]["train_labels"]
