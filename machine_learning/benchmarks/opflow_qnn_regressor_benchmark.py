@@ -14,8 +14,10 @@
 import pickle
 from itertools import product
 from timeit import timeit
+from typing import Optional
 
 from qiskit.algorithms.optimizers.cobyla import COBYLA
+from qiskit_machine_learning.algorithms import NeuralNetworkRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 from .base_regressor_benchmark import (
@@ -38,7 +40,7 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
 
     def __init__(self) -> None:
         super().__init__()
-        self.model = None
+        self.model: Optional[NeuralNetworkRegressor] = None
         self.train_features = None
         self.train_labels = None
         self.test_features = None
