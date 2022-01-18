@@ -129,5 +129,4 @@ class BaseRegressorBenchmark(ABC):
             num_inputs, feature_map, ansatz, quantum_instance=self.backends[quantum_instance_name]
         )
 
-        model = NeuralNetworkRegressor(opflow_qnn, optimizer=optimizer)
-        return model
+        return NeuralNetworkRegressor(opflow_qnn, optimizer=optimizer)
