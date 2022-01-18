@@ -44,7 +44,7 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
         self.test_features = None
         self.test_labels = None
 
-    def setup_cache(self):
+    def setup_cache(self) -> None:
         """Cache Opflow fitted model."""
         for dataset, backend in product(*self.params):
             train_features = self.datasets[dataset]["train_features"]
