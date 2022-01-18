@@ -94,8 +94,7 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
 
     def track_score_opflow_qnn_regressor(self, _, __):
         """R2 score of the model on data."""
-        score = self.model.score(self.test_features, self.test_labels)
-        return score
+        return self.model.score(self.test_features, self.test_labels)
 
     def track_mae_opflow_qnn_regressor(self, _, __):
         """Mean absolute error of the model on data."""
