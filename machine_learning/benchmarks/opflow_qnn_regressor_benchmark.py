@@ -89,7 +89,7 @@ class OpflowQnnRegressorBenchmarks(BaseRegressorBenchmark):
         self.model.score(self.train_features, self.train_labels)
 
     def time_predict_opflow_qnn_regressor(self, _, __):
-        """Time predicting with regressor OpflowQNN."""
+        """Time predicting with OpflowQNN regressor."""
         self.model.predict(self.train_features)
 
     def track_score_opflow_qnn_regressor(self, _, __):
