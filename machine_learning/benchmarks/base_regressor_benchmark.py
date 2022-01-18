@@ -38,7 +38,6 @@ class BaseRegressorBenchmark(ABC):
     """Base class for Regressor benchmarks."""
 
     def __init__(self):
-
         quantum_instance_statevector = QuantumInstance(
             Aer.get_backend("statevector_simulator"),
             seed_simulator=algorithm_globals.random_seed,
