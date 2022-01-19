@@ -12,7 +12,7 @@
 
 """Base for VQC based classifier benchmarks."""
 from abc import ABC
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 from qiskit.algorithms.optimizers import Optimizer
@@ -33,7 +33,7 @@ from .datasets import (
 class VqcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
     """Base for Opflow Classifier benchmarks."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         # prepare synthetic
@@ -56,22 +56,7 @@ class VqcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         synth_test_labels = encoder.fit_transform(synth_test_labels.reshape(-1, 1)).toarray()
 
         # prepare iris
-        iris_features_all, iris_labels_all = load_iris(return_X_y=True)
-
-        size = 25
-        iris_features = np.zeros((size, 4))
-        iris_labels = np.zeros(size)
-
-        for i in range(25):
-            # there are 50 samples of each class, three classes, but we sample only two!
-            index = 50 * (i % 3) + i
-            iris_features[i, :] = iris_features_all[index]
-            iris_labels[i] = iris_labels_all[index]
-
-        scaler = MinMaxScaler((-1, 1))
-        iris_features = scaler.fit_transform(iris_features)
-        # one hot encoding
-        iris_labels = encoder.fit_transform(iris_labels.reshape(-1, 1)).toarray()
+        iris_features, iris_labels = self._prepare_iris()
 
         (
             iris_train_features,
@@ -99,6 +84,24 @@ class VqcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
                 "test_labels": iris_test_labels,
             },
         }
+
+    def _prepare_iris(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Load the iris dataset, pick a subset and transform it."""
+        iris_features_all, iris_labels_all = load_iris(return_X_y=True)
+        size = 25
+        iris_features = np.zeros((size, 4))
+        iris_labels = np.zeros(size)
+        for i in range(25):
+            # there are 50 samples of each class, three classes, but we sample only two!
+            index = 50 * (i % 3) + i
+            iris_features[i, :] = iris_features_all[index]
+            iris_labels[i] = iris_labels_all[index]
+        scaler = MinMaxScaler((-1, 1))
+        iris_features = scaler.fit_transform(iris_features)
+        # one hot encoding
+        encoder = OneHotEncoder()
+        iris_labels = encoder.fit_transform(iris_labels.reshape(-1, 1)).toarray()
+        return iris_features, iris_labels
 
     def _construct_vqc_classifier_synthetic(
         self,

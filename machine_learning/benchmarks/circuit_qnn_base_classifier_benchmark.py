@@ -12,7 +12,7 @@
 
 """Base for CircuitQNN based Classifier benchmarks."""
 from abc import ABC
-from typing import Optional, Callable
+from typing import Optional, Callable, Tuple
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -35,7 +35,7 @@ from .datasets import (
 class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
     """Base for CircuitQNN Classifier benchmarks."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # prepare synthetic
         (
@@ -51,21 +51,7 @@ class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         )
 
         # prepare iris
-        iris_features_all, iris_labels_all = load_iris(return_X_y=True)
-
-        size = 25
-        iris_features = np.zeros((size, 4))
-        iris_labels = np.zeros(size)
-
-        for i in range(25):
-            # there are 50 samples of each class, three classes
-            index = 50 * (i % 3) + i
-            iris_features[i, :] = iris_features_all[index]
-            iris_labels[i] = iris_labels_all[index]
-
-        scaler = MinMaxScaler((-1, 1))
-        iris_features = scaler.fit_transform(iris_features)
-
+        iris_features, iris_labels = self._prepare_iris()
         (
             iris_train_features,
             iris_test_features,
@@ -92,6 +78,21 @@ class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
                 "test_labels": iris_test_labels,
             },
         }
+
+    def _prepare_iris(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Load the iris dataset, pick a subset and transform it."""
+        iris_features_all, iris_labels_all = load_iris(return_X_y=True)
+        size = 25
+        iris_features = np.zeros((size, 4))
+        iris_labels = np.zeros(size)
+        for i in range(25):
+            # there are 50 samples of each class, three classes
+            index = 50 * (i % 3) + i
+            iris_features[i, :] = iris_features_all[index]
+            iris_labels[i] = iris_labels_all[index]
+        scaler = MinMaxScaler((-1, 1))
+        iris_features = scaler.fit_transform(iris_features)
+        return iris_features, iris_labels
 
     def _construct_qnn_classifier_synthetic(
         self, quantum_instance_name: str, optimizer: Optional[Optimizer] = None

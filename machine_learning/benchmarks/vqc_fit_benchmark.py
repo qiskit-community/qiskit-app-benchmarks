@@ -16,7 +16,7 @@ from timeit import timeit
 
 from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B, NELDER_MEAD
 
-from .base_classifier_benchmark import DATASET_SYNTHETIC_CLASSIFICATION
+from .base_classifier_benchmark import DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION
 from .vqc_base_benchmark import VqcBaseClassifierBenchmark
 
 
@@ -26,7 +26,7 @@ class VqcFitBenchmarks(VqcBaseClassifierBenchmark):
     version = 2
     timeout = 1200.0
     params = (
-        # VQC does not work with multiple classes, so only the synthetic dataset now
+        # Only the synthetic dataset now
         [DATASET_SYNTHETIC_CLASSIFICATION],
         ["qasm_simulator", "statevector_simulator"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
@@ -34,7 +34,7 @@ class VqcFitBenchmarks(VqcBaseClassifierBenchmark):
     )
     param_names = ["dataset", "backend name", "optimizer", "loss function"]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.optimizers = {
@@ -48,8 +48,10 @@ class VqcFitBenchmarks(VqcBaseClassifierBenchmark):
         self.test_labels = None
         self.model = None
 
-    def setup(self, dataset: str, quantum_instance_name: str, optimizer: str, loss_function: str):
-        """Setup the benchmark."""
+    def setup(
+        self, dataset: str, quantum_instance_name: str, optimizer: str, loss_function: str
+    ) -> None:
+        """Set up the benchmark."""
         self.train_features = self.datasets[dataset]["train_features"]
         self.train_labels = self.datasets[dataset]["train_labels"]
 
@@ -59,12 +61,14 @@ class VqcFitBenchmarks(VqcBaseClassifierBenchmark):
                 optimizer=self.optimizers[optimizer],
                 loss_function=loss_function,
             )
-        else:
+        elif dataset == DATASET_IRIS_CLASSIFICATION:
             self.model = self._construct_vqc_classifier_iris(
                 quantum_instance_name=quantum_instance_name,
                 optimizer=self.optimizers[optimizer],
                 loss_function=loss_function,
             )
+        else:
+            raise ValueError(f"Unsupported dataset: {dataset}")
 
     # pylint: disable=invalid-name
     def time_fit_vqc(self, _, __, ___, ____):

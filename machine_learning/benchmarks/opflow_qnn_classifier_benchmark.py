@@ -14,8 +14,10 @@
 import pickle
 from itertools import product
 from timeit import timeit
+from typing import Optional
 
 from qiskit.algorithms.optimizers import COBYLA
+from qiskit_machine_learning.algorithms import NeuralNetworkClassifier
 from sklearn.metrics import precision_score, recall_score, f1_score
 
 from .opflow_qnn_base_classifier_benchmark import OpflowQnnBaseClassifierBenchmark
@@ -36,16 +38,16 @@ class OpflowQnnClassifierBenchmarks(OpflowQnnBaseClassifierBenchmark):
     ]
     param_names = ["dataset", "backend name"]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.train_features = None
         self.train_labels = None
         self.test_features = None
         self.test_labels = None
-        self.model = None
+        self.model: Optional[NeuralNetworkClassifier] = None
 
-    def setup(self, dataset: str, quantum_instance_name: str):
-        """Setup the benchmark."""
+    def setup(self, dataset: str, quantum_instance_name: str) -> None:
+        """Set up the benchmark."""
 
         self.train_features = self.datasets[dataset]["train_features"]
         self.train_labels = self.datasets[dataset]["train_labels"]
@@ -57,7 +59,6 @@ class OpflowQnnClassifierBenchmarks(OpflowQnnBaseClassifierBenchmark):
                 quantum_instance_name=quantum_instance_name
             )
         else:
-            # we have only two dataset for now, so this is for "iris"
             self.model = self._construct_opflow_classifier_iris(
                 quantum_instance_name=quantum_instance_name
             )
@@ -66,7 +67,7 @@ class OpflowQnnClassifierBenchmarks(OpflowQnnBaseClassifierBenchmark):
         with open(file_name, "rb") as file:
             self.model._fit_result = pickle.load(file)
 
-    def setup_cache(self):
+    def setup_cache(self) -> None:
         """Cache CircuitQNN fitted model"""
         for dataset, backend in product(*self.params):
             train_features = self.datasets[dataset]["train_features"]
@@ -76,11 +77,13 @@ class OpflowQnnClassifierBenchmarks(OpflowQnnBaseClassifierBenchmark):
                 model = self._construct_opflow_classifier_synthetic(
                     quantum_instance_name=backend, optimizer=COBYLA(maxiter=200)
                 )
-            else:
-                # we have only two dataset for now, so this clause is for "iris"
+            elif dataset == DATASET_IRIS_CLASSIFICATION:
                 model = self._construct_opflow_classifier_iris(
                     quantum_instance_name=backend, optimizer=COBYLA(maxiter=200)
                 )
+            else:
+                raise ValueError(f"Unsupported dataset: {dataset}")
+
             model.fit(train_features, train_labels)
 
             file_name = f"opflow_qnn_{dataset}_{backend}.pickle"

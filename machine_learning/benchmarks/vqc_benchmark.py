@@ -13,11 +13,13 @@
 import pickle
 from itertools import product
 from timeit import timeit
+from typing import Optional
 
 from qiskit.algorithms.optimizers import COBYLA
+from qiskit_machine_learning.algorithms import NeuralNetworkClassifier
 from sklearn.metrics import precision_score, recall_score, f1_score
 
-from .base_classifier_benchmark import DATASET_SYNTHETIC_CLASSIFICATION
+from .base_classifier_benchmark import DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION
 from .vqc_base_benchmark import VqcBaseClassifierBenchmark
 
 
@@ -27,22 +29,22 @@ class VqcBenchmarks(VqcBaseClassifierBenchmark):
     version = 2
     timeout = 1200.0
     params = [
-        # VQC does not work with multiple classes, so only the synthetic dataset now
+        # Only the synthetic dataset now
         [DATASET_SYNTHETIC_CLASSIFICATION],
         ["qasm_simulator", "statevector_simulator"],
     ]
     param_names = ["dataset", "backend name"]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.train_features = None
         self.train_labels = None
         self.test_features = None
         self.test_labels = None
-        self.model = None
+        self.model: Optional[NeuralNetworkClassifier] = None
 
-    def setup(self, dataset: str, quantum_instance_name: str):
-        """Setup the benchmark."""
+    def setup(self, dataset: str, quantum_instance_name: str) -> None:
+        """Set up the benchmark."""
 
         self.train_features = self.datasets[dataset]["train_features"]
         self.train_labels = self.datasets[dataset]["train_labels"]
@@ -53,17 +55,18 @@ class VqcBenchmarks(VqcBaseClassifierBenchmark):
             self.model = self._construct_vqc_classifier_synthetic(
                 quantum_instance_name=quantum_instance_name
             )
-        else:
-            # we have only two dataset for now, so this is for "iris"
+        elif dataset == DATASET_IRIS_CLASSIFICATION:
             self.model = self._construct_vqc_classifier_iris(
                 quantum_instance_name=quantum_instance_name
             )
+        else:
+            raise ValueError(f"Unsupported dataset: {dataset}")
 
         file_name = f"vqc_{dataset}_{quantum_instance_name}.pickle"
         with open(file_name, "rb") as file:
             self.model._fit_result = pickle.load(file)
 
-    def setup_cache(self):
+    def setup_cache(self) -> None:
         """Cache VQC fitted model"""
         for dataset, backend in product(*self.params):
             train_features = self.datasets[dataset]["train_features"]
@@ -73,11 +76,13 @@ class VqcBenchmarks(VqcBaseClassifierBenchmark):
                 model = self._construct_vqc_classifier_synthetic(
                     quantum_instance_name=backend, optimizer=COBYLA(maxiter=200)
                 )
-            else:
-                # we have only two dataset for now, so this clause is for "iris"
+            elif dataset == DATASET_IRIS_CLASSIFICATION:
                 model = self._construct_vqc_classifier_iris(
                     quantum_instance_name=backend, optimizer=COBYLA(maxiter=200)
                 )
+            else:
+                raise ValueError(f"Unsupported dataset: {dataset}")
+
             model.fit(train_features, train_labels)
 
             file_name = f"vqc_{dataset}_{backend}.pickle"

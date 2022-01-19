@@ -35,7 +35,7 @@ class OpflowQnnFitClassifierBenchmarks(OpflowQnnBaseClassifierBenchmark):
     )
     param_names = ["dataset", "backend name", "optimizer"]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.optimizers = {
@@ -49,8 +49,8 @@ class OpflowQnnFitClassifierBenchmarks(OpflowQnnBaseClassifierBenchmark):
         self.test_labels = None
         self.model = None
 
-    def setup(self, dataset: str, quantum_instance_name: str, optimizer: str):
-        """Setup the benchmark."""
+    def setup(self, dataset: str, quantum_instance_name: str, optimizer: str) -> None:
+        """Set up the benchmark."""
         self.train_features = self.datasets[dataset]["train_features"]
         self.train_labels = self.datasets[dataset]["train_labels"]
 
@@ -59,11 +59,13 @@ class OpflowQnnFitClassifierBenchmarks(OpflowQnnBaseClassifierBenchmark):
                 quantum_instance_name=quantum_instance_name,
                 optimizer=self.optimizers[optimizer],
             )
-        else:
+        elif dataset == DATASET_IRIS_CLASSIFICATION:
             self.model = self._construct_opflow_classifier_iris(
                 quantum_instance_name=quantum_instance_name,
                 optimizer=self.optimizers[optimizer],
             )
+        else:
+            raise ValueError(f"Unsupported dataset: {dataset}")
 
     # pylint: disable=invalid-name
     def time_fit_opflow_qnn_classifier(self, _, __, ___):
