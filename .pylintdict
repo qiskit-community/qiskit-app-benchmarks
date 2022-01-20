@@ -60,8 +60,6 @@ hashable
 hilbert
 hoc
 html
-html
-init
 init
 inlier
 inplace
@@ -120,8 +118,6 @@ precomputing
 priori
 ps
 pxd
-pxd
-py
 py
 pytorch
 qae
@@ -133,12 +129,10 @@ qc
 qgan
 qgans
 qiskit
-qiskit
 qiskit's
 qnn
 qsvc
 qsvr
-qubit
 qubit
 qubits
 qubo
@@ -163,7 +157,6 @@ softmax
 sparsearray
 statevector
 statevectors
-stdlib
 stdlib
 stdout
 str
