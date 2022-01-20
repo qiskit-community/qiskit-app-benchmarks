@@ -10,7 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""Base for CircuitQNN based Classifier benchmarks."""
+"""Base class for CircuitQNN based Classifier benchmarks."""
 from abc import ABC
 from typing import Optional, Callable, Tuple
 
