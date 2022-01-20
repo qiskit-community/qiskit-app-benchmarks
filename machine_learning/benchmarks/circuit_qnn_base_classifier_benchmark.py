@@ -33,7 +33,7 @@ from .datasets import (
 
 
 class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
-    """Base for CircuitQNN Classifier benchmarks."""
+    """Base class for CircuitQNN Classifier benchmarks."""
 
     def __init__(self) -> None:
         super().__init__()
