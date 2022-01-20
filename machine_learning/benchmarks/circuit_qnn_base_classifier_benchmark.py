@@ -142,7 +142,6 @@ class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         qc.append(feature_map, range(num_inputs))
         qc.append(ansatz, range(num_inputs))
 
-        # construct QNN
         circuit_qnn = CircuitQNN(
             circuit=qc,
             input_params=feature_map.parameters,
