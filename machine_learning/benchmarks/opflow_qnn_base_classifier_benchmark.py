@@ -116,7 +116,7 @@ class OpflowQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
 
     def _construct_opflow_classifier(
         self, num_inputs: int, quantum_instance_name: str, optimizer: Optional[Optimizer] = None
-    ):
+    ) -> NeuralNetworkClassifier:
         """Construct a TwoLayerQNN-based classifier."""
         feature_map = ZZFeatureMap(num_inputs)
         ansatz = RealAmplitudes(num_inputs)

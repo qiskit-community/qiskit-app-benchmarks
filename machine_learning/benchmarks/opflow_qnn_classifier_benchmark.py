@@ -58,10 +58,12 @@ class OpflowQnnClassifierBenchmarks(OpflowQnnBaseClassifierBenchmark):
             self.model = self._construct_opflow_classifier_synthetic(
                 quantum_instance_name=quantum_instance_name
             )
-        else:
+        elif dataset == DATASET_IRIS_CLASSIFICATION:
             self.model = self._construct_opflow_classifier_iris(
                 quantum_instance_name=quantum_instance_name
             )
+        else:
+            raise ValueError(f"Unsupported dataset: {dataset}")
 
         file_name = f"opflow_qnn_{dataset}_{quantum_instance_name}.pickle"
         with open(file_name, "rb") as file:
