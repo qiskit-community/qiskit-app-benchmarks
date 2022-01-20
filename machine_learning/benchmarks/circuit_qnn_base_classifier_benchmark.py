@@ -134,17 +134,14 @@ class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         quantum_instance_name: str,
         optimizer: Optional[Optimizer],
     ) -> NeuralNetworkClassifier:
-        # creating feature map
         feature_map = ZZFeatureMap(num_inputs)
 
-        # creating ansatz
         ansatz = RealAmplitudes(num_inputs)
 
         qc = QuantumCircuit(num_inputs)
         qc.append(feature_map, range(num_inputs))
         qc.append(ansatz, range(num_inputs))
 
-        # construct QNN
         circuit_qnn = CircuitQNN(
             circuit=qc,
             input_params=feature_map.parameters,
