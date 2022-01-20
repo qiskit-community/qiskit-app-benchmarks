@@ -134,7 +134,6 @@ class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         quantum_instance_name: str,
         optimizer: Optional[Optimizer],
     ) -> NeuralNetworkClassifier:
-        # creating feature map
         feature_map = ZZFeatureMap(num_inputs)
 
         # creating ansatz
