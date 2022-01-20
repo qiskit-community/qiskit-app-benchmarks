@@ -136,7 +136,6 @@ class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
     ) -> NeuralNetworkClassifier:
         feature_map = ZZFeatureMap(num_inputs)
 
-        # creating ansatz
         ansatz = RealAmplitudes(num_inputs)
 
         qc = QuantumCircuit(num_inputs)
