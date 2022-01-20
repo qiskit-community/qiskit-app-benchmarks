@@ -32,7 +32,7 @@ from .datasets import (
 
 
 class OpflowQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
-    """Base for Opflow Classifier benchmarks."""
+    """Base class for Opflow Classifier benchmarks."""
 
     def __init__(self) -> None:
         super().__init__()
