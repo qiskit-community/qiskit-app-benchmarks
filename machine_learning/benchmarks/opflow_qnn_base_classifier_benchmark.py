@@ -10,7 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""Base for Opflow based classifier benchmarks."""
+"""Base class for Opflow based classifier benchmarks."""
 from abc import ABC
 from typing import Optional, Tuple
 
