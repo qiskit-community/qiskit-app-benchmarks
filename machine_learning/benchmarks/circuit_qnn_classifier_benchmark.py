@@ -70,7 +70,7 @@ class CircuitQnnClassifierBenchmarks(CircuitQnnBaseClassifierBenchmark):
             self.model._fit_result = pickle.load(file)
 
     def setup_cache(self) -> None:
-        """Cache CircuitQNN fitted model"""
+        """Cache CircuitQNN fitted model."""
         for dataset, backend in product(*self.params):
             train_features = self.datasets[dataset]["train_features"]
             train_labels = self.datasets[dataset]["train_labels"]
