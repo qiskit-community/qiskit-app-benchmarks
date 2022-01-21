@@ -13,8 +13,11 @@
 
 from itertools import product
 from timeit import timeit
+from typing import Optional
 
+import numpy as np
 from qiskit.algorithms.optimizers import COBYLA, NELDER_MEAD, L_BFGS_B
+from qiskit_machine_learning.algorithms import NeuralNetworkClassifier
 
 from .base_classifier_benchmark import (
     DATASET_SYNTHETIC_CLASSIFICATION,
@@ -43,11 +46,11 @@ class OpflowQnnFitClassifierBenchmarks(OpflowQnnBaseClassifierBenchmark):
             "nelder-mead": NELDER_MEAD(maxiter=50),
             "l-bfgs-b": L_BFGS_B(maxiter=20),
         }
-        self.train_features = None
-        self.train_labels = None
-        self.test_features = None
-        self.test_labels = None
-        self.model = None
+        self.train_features: Optional[np.ndarray] = None
+        self.train_labels: Optional[np.ndarray] = None
+        self.test_features: Optional[np.ndarray] = None
+        self.test_labels: Optional[np.ndarray] = None
+        self.model: Optional[NeuralNetworkClassifier] = None
 
     def setup(self, dataset: str, quantum_instance_name: str, optimizer: str) -> None:
         """Set up the benchmark."""

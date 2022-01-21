@@ -13,8 +13,11 @@
 
 from itertools import product
 from timeit import timeit
+from typing import Optional
 
+import numpy as np
 from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B, NELDER_MEAD
+from qiskit_machine_learning.algorithms import NeuralNetworkClassifier
 
 from .base_classifier_benchmark import DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION
 from .vqc_base_benchmark import VqcBaseClassifierBenchmark
@@ -42,11 +45,11 @@ class VqcFitBenchmarks(VqcBaseClassifierBenchmark):
             "nelder-mead": NELDER_MEAD(maxiter=50),
             "l-bfgs-b": L_BFGS_B(maxiter=20),
         }
-        self.train_features = None
-        self.train_labels = None
-        self.test_features = None
-        self.test_labels = None
-        self.model = None
+        self.train_features: Optional[np.ndarray] = None
+        self.train_labels: Optional[np.ndarray] = None
+        self.test_features: Optional[np.ndarray] = None
+        self.test_labels: Optional[np.ndarray] = None
+        self.model: Optional[NeuralNetworkClassifier] = None
 
     def setup(
         self, dataset: str, quantum_instance_name: str, optimizer: str, loss_function: str

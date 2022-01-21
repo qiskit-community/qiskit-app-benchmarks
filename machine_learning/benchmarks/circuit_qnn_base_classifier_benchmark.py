@@ -12,24 +12,16 @@
 
 """Base class for CircuitQNN based Classifier benchmarks."""
 from abc import ABC
-from typing import Optional, Callable, Tuple
+from typing import Optional, Callable
 
-import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.algorithms.optimizers import Optimizer
 from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
 from qiskit.utils import algorithm_globals
 from qiskit_machine_learning.algorithms import NeuralNetworkClassifier
 from qiskit_machine_learning.neural_networks import CircuitQNN
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 
 from .base_classifier_benchmark import BaseClassifierBenchmark
-from .datasets import (
-    DATASET_SYNTHETIC_CLASSIFICATION_FEATURES,
-    DATASET_SYNTHETIC_CLASSIFICATION_LABELS,
-)
 
 
 class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
@@ -37,62 +29,6 @@ class CircuitQnnBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
 
     def __init__(self) -> None:
         super().__init__()
-        # prepare synthetic
-        (
-            synth_train_features,
-            synth_test_features,
-            synth_train_labels,
-            synth_test_labels,
-        ) = train_test_split(
-            DATASET_SYNTHETIC_CLASSIFICATION_FEATURES,
-            DATASET_SYNTHETIC_CLASSIFICATION_LABELS,
-            test_size=5,
-            shuffle=False,
-        )
-
-        # prepare iris
-        iris_features, iris_labels = self._prepare_iris()
-        (
-            iris_train_features,
-            iris_test_features,
-            iris_train_labels,
-            iris_test_labels,
-        ) = train_test_split(
-            iris_features,
-            iris_labels,
-            test_size=5,
-            shuffle=False,
-        )
-
-        self.datasets = {
-            "dataset_synthetic": {
-                "train_features": synth_train_features,
-                "train_labels": synth_train_labels,
-                "test_features": synth_test_features,
-                "test_labels": synth_test_labels,
-            },
-            "dataset_iris": {
-                "train_features": iris_train_features,
-                "train_labels": iris_train_labels,
-                "test_features": iris_test_features,
-                "test_labels": iris_test_labels,
-            },
-        }
-
-    def _prepare_iris(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Load the iris dataset, pick a subset and transform it."""
-        iris_features_all, iris_labels_all = load_iris(return_X_y=True)
-        size = 25
-        iris_features = np.zeros((size, 4))
-        iris_labels = np.zeros(size)
-        for i in range(25):
-            # there are 50 samples of each class, three classes
-            index = 50 * (i % 3) + i
-            iris_features[i, :] = iris_features_all[index]
-            iris_labels[i] = iris_labels_all[index]
-        scaler = MinMaxScaler((-1, 1))
-        iris_features = scaler.fit_transform(iris_features)
-        return iris_features, iris_labels
 
     def _construct_qnn_classifier_synthetic(
         self, quantum_instance_name: str, optimizer: Optional[Optimizer] = None

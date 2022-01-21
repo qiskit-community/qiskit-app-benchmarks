@@ -12,96 +12,29 @@
 
 """Base class for VQC based classifier benchmarks."""
 from abc import ABC
-from typing import Optional, Tuple
+from typing import Optional
 
-import numpy as np
 from qiskit.algorithms.optimizers import Optimizer
 from qiskit.circuit.library import RealAmplitudes, ZZFeatureMap
 from qiskit.utils import algorithm_globals
 from qiskit_machine_learning.algorithms import NeuralNetworkClassifier, VQC
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, FunctionTransformer
 
 from .base_classifier_benchmark import BaseClassifierBenchmark
-from .datasets import (
-    DATASET_SYNTHETIC_CLASSIFICATION_FEATURES,
-    DATASET_SYNTHETIC_CLASSIFICATION_LABELS,
-)
 
 
 class VqcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
     """Base class for Opflow Classifier benchmarks."""
 
     def __init__(self) -> None:
-        super().__init__()
-
-        # prepare synthetic
-        (
-            synth_train_features,
-            synth_test_features,
-            synth_train_labels,
-            synth_test_labels,
-        ) = train_test_split(
-            DATASET_SYNTHETIC_CLASSIFICATION_FEATURES,
-            DATASET_SYNTHETIC_CLASSIFICATION_LABELS,
-            test_size=5,
-            shuffle=False,
+        reshaper = FunctionTransformer(lambda x: x.reshape(-1, 1))
+        encoder = OneHotEncoder(sparse=False)
+        super().__init__(
+            synthetic_label_encoder=Pipeline([("reshape", reshaper), ("one hot", encoder)]),
+            iris_num_classes=2,
+            iris_label_encoder=Pipeline([("reshape", reshaper), ("one hot", encoder)]),
         )
-
-        # one hot encoding for VQC
-        encoder = OneHotEncoder()
-        # VQC does not work with csr_matrix returned by the encoder
-        synth_train_labels = encoder.fit_transform(synth_train_labels.reshape(-1, 1)).toarray()
-        synth_test_labels = encoder.fit_transform(synth_test_labels.reshape(-1, 1)).toarray()
-
-        # prepare iris
-        iris_features, iris_labels = self._prepare_iris()
-
-        (
-            iris_train_features,
-            iris_test_features,
-            iris_train_labels,
-            iris_test_labels,
-        ) = train_test_split(
-            iris_features,
-            iris_labels,
-            test_size=5,
-            shuffle=False,
-        )
-
-        self.datasets = {
-            "dataset_synthetic": {
-                "train_features": synth_train_features,
-                "train_labels": synth_train_labels,
-                "test_features": synth_test_features,
-                "test_labels": synth_test_labels,
-            },
-            "dataset_iris": {
-                "train_features": iris_train_features,
-                "train_labels": iris_train_labels,
-                "test_features": iris_test_features,
-                "test_labels": iris_test_labels,
-            },
-        }
-
-    def _prepare_iris(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Load the iris dataset, pick a subset and transform it."""
-        iris_features_all, iris_labels_all = load_iris(return_X_y=True)
-        size = 25
-        iris_features = np.zeros((size, 4))
-        iris_labels = np.zeros(size)
-        for i in range(25):
-            # there are 50 samples of each class, three classes, but we sample only two!
-            index = 50 * (i % 3) + i
-            iris_features[i, :] = iris_features_all[index]
-            iris_labels[i] = iris_labels_all[index]
-        scaler = MinMaxScaler((-1, 1))
-        iris_features = scaler.fit_transform(iris_features)
-        # one hot encoding
-        encoder = OneHotEncoder()
-        iris_labels = encoder.fit_transform(iris_labels.reshape(-1, 1)).toarray()
-        return iris_features, iris_labels
 
     def _construct_vqc_classifier_synthetic(
         self,

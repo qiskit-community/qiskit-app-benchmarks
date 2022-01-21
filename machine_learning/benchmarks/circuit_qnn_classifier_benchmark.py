@@ -16,6 +16,7 @@ from itertools import product
 from timeit import timeit
 from typing import Optional
 
+import numpy as np
 from qiskit.algorithms.optimizers import COBYLA
 from qiskit_machine_learning.algorithms import NeuralNetworkClassifier
 from sklearn.metrics import f1_score, precision_score, recall_score
@@ -40,10 +41,10 @@ class CircuitQnnClassifierBenchmarks(CircuitQnnBaseClassifierBenchmark):
 
     def __init__(self) -> None:
         super().__init__()
-        self.train_features = None
-        self.train_labels = None
-        self.test_features = None
-        self.test_labels = None
+        self.train_features: Optional[np.ndarray] = None
+        self.train_labels: Optional[np.ndarray] = None
+        self.test_features: Optional[np.ndarray] = None
+        self.test_labels: Optional[np.ndarray] = None
         self.model: Optional[NeuralNetworkClassifier] = None
 
     def setup(self, dataset: str, quantum_instance_name: str) -> None:
