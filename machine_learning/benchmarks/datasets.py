@@ -10,7 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-"""Dataset definitions for machine learning benchmarks"""
+"""Dataset definitions for machine learning benchmarks."""
 
 import pathlib
 from typing import Tuple
