@@ -34,7 +34,7 @@ DATASET_IRIS_CLASSIFICATION = "dataset_iris"
 
 
 class BaseClassifierBenchmark(ABC):
-    """Base for Classifier benchmarks."""
+    """Base class for Classifier benchmarks."""
 
     def __init__(
         self,
