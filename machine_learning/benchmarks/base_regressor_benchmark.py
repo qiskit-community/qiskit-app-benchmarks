@@ -98,8 +98,9 @@ class BaseRegressorBenchmark(ABC):
         Prepare the CCPP dataset, we can afford only a tiny subset of the dataset for training.
         """
         ccpp_features, ccpp_labels = load_ccpp()
-        ccpp_features = ccpp_features[:25]
-        ccpp_labels = ccpp_labels[:25]
+        num_features = 25
+        ccpp_features = ccpp_features[:num_features]
+        ccpp_labels = ccpp_labels[:num_features]
         scaler = MinMaxScaler((-1, 1))
         ccpp_features = scaler.fit_transform(ccpp_features)
         ccpp_labels = scaler.fit_transform(ccpp_labels.reshape(-1, 1))
