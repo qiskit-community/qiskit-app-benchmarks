@@ -173,6 +173,7 @@ th
 toctree
 traceback
 transpilation
+uci
 uncompiled
 unitaries
 univariate
