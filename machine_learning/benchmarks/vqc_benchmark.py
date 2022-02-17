@@ -1,6 +1,6 @@
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2021.
+# (C) Copyright IBM 2021, 2022.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -9,72 +9,133 @@
 # Any modifications or derivative works of this code must retain this
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
-
 """Variational Quantum Classifier benchmarks."""
+import pickle
 from itertools import product
 from timeit import timeit
+from typing import Optional
 
 import numpy as np
-from qiskit.circuit.library import ZZFeatureMap, RealAmplitudes
 from qiskit.algorithms.optimizers import COBYLA
-from qiskit_machine_learning.algorithms import VQC
+from qiskit_machine_learning.algorithms import NeuralNetworkClassifier
+from sklearn.metrics import precision_score, recall_score, f1_score
 
-# pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
-from .base_classifier_benchmark import BaseClassifierBenchmark
+from .base_classifier_benchmark import DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION
+from .vqc_base_benchmark import VqcBaseClassifierBenchmark
 
 
-class VqcBenchmarks(BaseClassifierBenchmark):
+class VqcBenchmarks(VqcBaseClassifierBenchmark):
     """Variational Quantum Classifier benchmarks."""
 
-    version = 1
+    version = 2
     timeout = 1200.0
-    params = [["dataset_1"], ["qasm_simulator", "statevector_simulator"]]
-    param_names = ["backend name"]
+    params = [
+        # Only the synthetic dataset now
+        [DATASET_SYNTHETIC_CLASSIFICATION],
+        ["qasm_simulator", "statevector_simulator"],
+    ]
+    param_names = ["dataset", "backend name"]
 
-    def setup(self, dataset, quantum_instance_name):
-        """setup"""
-        self.X = self.datasets[dataset]
-        num_inputs = len(self.X[0])
-        num_samples = len(self.X)
-        y01 = 1 * (np.sum(self.X, axis=1) >= 0)  # in { 0,  1}
-        self.y_one_hot = np.zeros((num_samples, 2))
-        for i in range(num_samples):
-            self.y_one_hot[i, y01[i]] = 1
+    def __init__(self) -> None:
+        super().__init__()
+        self.train_features: Optional[np.ndarray] = None
+        self.train_labels: Optional[np.ndarray] = None
+        self.test_features: Optional[np.ndarray] = None
+        self.test_labels: Optional[np.ndarray] = None
+        self.model: Optional[NeuralNetworkClassifier] = None
 
-        # construct feature map, ansatz, and optimizer
-        feature_map = ZZFeatureMap(num_inputs)
-        ansatz = RealAmplitudes(num_inputs, reps=1)
-        # construct variational quantum classifier
-        self.vqc_fitted = VQC(
-            feature_map=feature_map,
-            ansatz=ansatz,
-            loss="cross_entropy",
-            optimizer=COBYLA(),
-            quantum_instance=self.backends[quantum_instance_name],
-        )
+    def setup(self, dataset: str, quantum_instance_name: str) -> None:
+        """Set up the benchmark."""
 
-        self.vqc_fitted.fit(self.X, self.y_one_hot)
+        self.train_features = self.datasets[dataset]["train_features"]
+        self.train_labels = self.datasets[dataset]["train_labels"]
+        self.test_features = self.datasets[dataset]["test_features"]
+        self.test_labels = self.datasets[dataset]["test_labels"]
 
-    def time_score_vqc(self, _, __):
+        if dataset == DATASET_SYNTHETIC_CLASSIFICATION:
+            self.model = self._construct_vqc_classifier_synthetic(
+                quantum_instance_name=quantum_instance_name
+            )
+        elif dataset == DATASET_IRIS_CLASSIFICATION:
+            self.model = self._construct_vqc_classifier_iris(
+                quantum_instance_name=quantum_instance_name
+            )
+        else:
+            raise ValueError(f"Unsupported dataset: {dataset}")
+
+        file_name = f"vqc_{dataset}_{quantum_instance_name}.pickle"
+        with open(file_name, "rb") as file:
+            self.model._fit_result = pickle.load(file)
+
+    def setup_cache(self) -> None:
+        """Cache VQC fitted model."""
+        for dataset, backend in product(*self.params):
+            train_features = self.datasets[dataset]["train_features"]
+            train_labels = self.datasets[dataset]["train_labels"]
+
+            if dataset == DATASET_SYNTHETIC_CLASSIFICATION:
+                model = self._construct_vqc_classifier_synthetic(
+                    quantum_instance_name=backend, optimizer=COBYLA(maxiter=200)
+                )
+            elif dataset == DATASET_IRIS_CLASSIFICATION:
+                model = self._construct_vqc_classifier_iris(
+                    quantum_instance_name=backend, optimizer=COBYLA(maxiter=200)
+                )
+            else:
+                raise ValueError(f"Unsupported dataset: {dataset}")
+
+            model.fit(train_features, train_labels)
+
+            file_name = f"vqc_{dataset}_{backend}.pickle"
+            with open(file_name, "wb") as file:
+                pickle.dump(model._fit_result, file)
+
+    # pylint: disable=invalid-name
+    def time_score_vqc_classifier(self, _, __):
         """Time scoring VQC on data."""
+        self.model.score(self.train_features, self.train_labels)
 
-        self.vqc_fitted.score(self.X, self.y_one_hot)
-
-    def time_predict_vqc(self, _, __):
+    def time_predict_vqc_classifier(self, _, __):
         """Time predicting with VQC."""
+        self.model.predict(self.train_features)
 
-        y_predict = self.vqc_fitted.predict(self.X)
-        return y_predict
+    def track_accuracy_score_vqc_classifier(self, _, __):
+        """Tracks the overall accuracy of the classification results."""
+        return self.model.score(self.test_features, self.test_labels)
+
+    def track_precision_score_vqc_classifier(self, _, __):
+        """Tracks the precision score."""
+        predicts = self.model.predict(self.test_features)
+        return precision_score(y_true=self.test_labels, y_pred=predicts, average="micro")
+
+    def track_recall_score_vqc_classifier(self, _, __):
+        """Tracks the recall score for each class of the classification results."""
+        predicts = self.model.predict(self.test_features)
+        return recall_score(y_true=self.test_labels, y_pred=predicts, average="micro")
+
+    def track_f1_score_vqc_classifier(self, _, __):
+        """Tracks the f1 score for each class of the classification results."""
+        predicts = self.model.predict(self.test_features)
+        return f1_score(y_true=self.test_labels, y_pred=predicts, average="micro")
 
 
 if __name__ == "__main__":
-    for dataset, backend in product(*VqcBenchmarks.params):
-        bench = VqcBenchmarks()
+    bench = VqcBenchmarks()
+    bench.setup_cache()
+    for dataset_name, backend_name in product(*VqcBenchmarks.params):
         try:
-            bench.setup(dataset, backend)
+            bench.setup(dataset_name, backend_name)
         except NotImplementedError:
             continue
 
-        for method in ("time_score_vqc", "time_predict_vqc"):
-            elapsed = timeit(f"bench.{method}(None, None)", number=10, globals=globals())
-            print(f"{method}:\t{elapsed}")
+        for method in (
+            "time_score_vqc_classifier",
+            "time_predict_vqc_classifier",
+            "track_accuracy_score_vqc_classifier",
+            "track_precision_score_vqc_classifier",
+            "track_recall_score_vqc_classifier",
+            "track_f1_score_vqc_classifier",
+        ):
+            elapsed = timeit(
+                f'bench.{method}("{dataset_name}", "{backend_name}")', number=10, globals=globals()
+            )

@@ -1,6 +1,6 @@
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2021.
+# (C) Copyright IBM 2021, 2022.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -13,48 +13,130 @@
 """Base for Classifier benchmarks."""
 
 from abc import ABC
+from typing import Tuple, Optional, Union
+
 import numpy as np
 from qiskit import Aer
-from qiskit.utils import QuantumInstance
+from qiskit.utils import QuantumInstance, algorithm_globals
+from sklearn.base import TransformerMixin
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import MinMaxScaler, FunctionTransformer
+
+from .datasets import (
+    DATASET_SYNTHETIC_CLASSIFICATION_FEATURES,
+    DATASET_SYNTHETIC_CLASSIFICATION_LABELS,
+)
+
+DATASET_SYNTHETIC_CLASSIFICATION = "dataset_synthetic"
+DATASET_IRIS_CLASSIFICATION = "dataset_iris"
 
 
 class BaseClassifierBenchmark(ABC):
-    """Base for Classifier benchmarks."""
+    """Base class for Classifier benchmarks."""
 
-    def __init__(self):
-
+    def __init__(
+        self,
+        synthetic_label_encoder: Optional[Union[TransformerMixin, Pipeline]] = None,
+        iris_num_classes: int = 3,
+        iris_label_encoder: Optional[Union[TransformerMixin, Pipeline]] = None,
+    ):
+        algorithm_globals.random_seed = 12345
         quantum_instance_statevector = QuantumInstance(
-            Aer.get_backend("statevector_simulator"), shots=1024
+            Aer.get_backend("statevector_simulator"),
+            seed_simulator=algorithm_globals.random_seed,
+            seed_transpiler=algorithm_globals.random_seed,
         )
-        quantum_instance_qasm = QuantumInstance(Aer.get_backend("qasm_simulator"), shots=1024)
+        quantum_instance_qasm = QuantumInstance(
+            Aer.get_backend("qasm_simulator"),
+            shots=1024,
+            seed_simulator=algorithm_globals.random_seed,
+            seed_transpiler=algorithm_globals.random_seed,
+        )
 
         self.backends = {
             "statevector_simulator": quantum_instance_statevector,
             "qasm_simulator": quantum_instance_qasm,
         }
 
-        self.dataset_1 = np.array(
-            [
-                [0.63332707, 0.05700334],
-                [-0.04218316, -0.74066734],
-                [-0.54731074, 0.6997243],
-                [-0.03254765, 0.68657814],
-                [0.57025591, 0.67333428],
-                [0.32978679, 0.90721741],
-                [0.28112104, -0.52329682],
-                [0.03209235, 0.05112333],
-                [0.46215367, 0.97636782],
-                [0.93945321, 0.09375981],
-                [-0.6546925, 0.1612654],
-                [0.38871208, 0.73535322],
-                [-0.72805702, 0.73124097],
-                [-0.79972062, -0.84444756],
-                [0.87636701, -0.66912929],
-                [-0.08563266, 0.79913683],
-                [0.31805884, -0.84938654],
-                [0.96364301, 0.86688318],
-                [-0.50482284, -0.64370197],
-                [-0.41502205, 0.38414452],
-            ]
+        # if none, just identity transformer
+        synthetic_label_encoder = synthetic_label_encoder or FunctionTransformer()
+        (
+            synth_train_features,
+            synth_test_features,
+            synth_train_labels,
+            synth_test_labels,
+        ) = self._prepare_synthetic(synthetic_label_encoder)
+
+        iris_label_encoder = iris_label_encoder or FunctionTransformer()
+        (
+            iris_train_features,
+            iris_test_features,
+            iris_train_labels,
+            iris_test_labels,
+        ) = self._prepare_iris(iris_num_classes, iris_label_encoder)
+
+        self.datasets = {
+            "dataset_synthetic": {
+                "train_features": synth_train_features,
+                "train_labels": synth_train_labels,
+                "test_features": synth_test_features,
+                "test_labels": synth_test_labels,
+            },
+            "dataset_iris": {
+                "train_features": iris_train_features,
+                "train_labels": iris_train_labels,
+                "test_features": iris_test_features,
+                "test_labels": iris_test_labels,
+            },
+        }
+
+    def _prepare_synthetic(
+        self, label_encoder: Union[TransformerMixin, Pipeline]
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        synthetic_labels = label_encoder.fit_transform(DATASET_SYNTHETIC_CLASSIFICATION_LABELS)
+
+        (
+            synth_train_features,
+            synth_test_features,
+            synth_train_labels,
+            synth_test_labels,
+        ) = train_test_split(
+            DATASET_SYNTHETIC_CLASSIFICATION_FEATURES,
+            synthetic_labels,
+            test_size=5,
+            shuffle=False,
         )
-        self.datasets = {"dataset_1": self.dataset_1}
+        return synth_train_features, synth_test_features, synth_train_labels, synth_test_labels
+
+    def _prepare_iris(
+        self, num_classes: int, label_encoder: Union[TransformerMixin, Pipeline]
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        iris_features_all, iris_labels_all = load_iris(return_X_y=True)
+        size = 25
+        iris_features = np.zeros((size, 4))
+        iris_labels = np.zeros(size)
+        for i in range(size):
+            # there are 50 samples of each class, three classes, but we sample only two!
+            num_samples = 50
+            index = num_samples * (i % num_classes) + i
+            iris_features[i, :] = iris_features_all[index]
+            iris_labels[i] = iris_labels_all[index]
+        scaler = MinMaxScaler((-1, 1))
+        iris_features = scaler.fit_transform(iris_features)
+        iris_labels = label_encoder.fit_transform(iris_labels)
+
+        (
+            iris_train_features,
+            iris_test_features,
+            iris_train_labels,
+            iris_test_labels,
+        ) = train_test_split(
+            iris_features,
+            iris_labels,
+            test_size=5,
+            shuffle=False,
+        )
+
+        return iris_train_features, iris_test_features, iris_train_labels, iris_test_labels

@@ -26,6 +26,7 @@
         "return-code=any python -c \"import shutil; shutil.rmtree('{build_dir}/qiskit_machine_learning.egg-info')\"",
         "python -mpip install git+https://github.com/Qiskit/qiskit-terra",
         "python -mpip install git+https://github.com/Qiskit/qiskit-aer",
+        "python -mpip install pandas",
         "python -mpip install {wheel_file}",
       ],
     "uninstall_command": [
