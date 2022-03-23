@@ -24,7 +24,7 @@ from qiskit_machine_learning.kernels import QuantumKernel
 from qiskit_machine_learning.kernels.algorithms import QuantumKernelTrainer
 from qiskit_machine_learning.algorithms import QSVC
 
-from .Leo_base_benchmark import QKernelBaseClassifierBenchmark
+from .qk_base_benchmark import QKernelBaseClassifierBenchmark
 
 
 class QKernelFitBenchmarks(QKernelBaseClassifierBenchmark):

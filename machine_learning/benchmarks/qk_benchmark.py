@@ -24,7 +24,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 from sympy import evaluate
 
 from .base_classifier_benchmark import DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION
-from .Leo_base_benchmark import QKernelBaseClassifierBenchmark
+from .qk_base_benchmark import QKernelBaseClassifierBenchmark
 
 class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
     """Quantum Kernel Classifier (q&svm or qkt) benchmarks."""
