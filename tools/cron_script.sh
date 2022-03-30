@@ -50,6 +50,9 @@ echo 'Update benchmarks repository dependencies'
 git pull
 pip install -U -r requirements-dev.txt
 
+echo 'Add rust compiler location to PATH'
+export PATH="$HOME/.cargo/bin:$PATH"
+
 echo 'Run ML Unit tests script'
 . $CRON_SCRIPT_PATH/ml_unittests.sh $GIT_PERSONAL_TOKEN
 

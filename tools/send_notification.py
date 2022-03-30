@@ -66,15 +66,13 @@ def _get_webhook_url(key: str, encryptedfile: str) -> str:
     return data["secrets"]["slack-app-url"]
 
 
-def _send_notification(key: str, encryptedfile: str, name: str, status: int, path: str) -> None:
+def _send_notification(key: str, encryptedfile: str, path: str) -> None:
     """Sends notification to Slack"""
     webhook_url = _get_webhook_url(key, encryptedfile)
-    msg_status = "succeeded" if status == 0 else "failed"
     with open(path, "rt", encoding="utf8") as file:
         text = file.read()
 
     blocks = [
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"{name} {msg_status}."}},
         {
             "type": "rich_text",
             "elements": [
@@ -112,10 +110,6 @@ if __name__ == "__main__":
         required=True,
         help="Encrypted file path.",
     )
-    PARSER.add_argument("-name", metavar="name", required=True, help="Application name")
-    PARSER.add_argument(
-        "-status", type=int, metavar="status", required=True, help="Status Success(0) or Failure"
-    )
     PARSER.add_argument(
         "-logfile",
         type=_check_path,
@@ -127,7 +121,7 @@ if __name__ == "__main__":
     STATUS = 0
     try:
         ARGS = PARSER.parse_args()
-        _send_notification(ARGS.key, ARGS.encryptedfile, ARGS.name, ARGS.status, ARGS.logfile)
+        _send_notification(ARGS.key, ARGS.encryptedfile, ARGS.logfile)
     except Exception as ex:  # pylint: disable=broad-except
         print(str(ex))
         STATUS = 1
