@@ -42,19 +42,13 @@ DATE=$(date +%Y%m%d%H%M%S)
 ML_LOG_FILE="${BASE_DIR}/${FILE_PREFIX}${DATE}${FILE_SUFFIX}"
 pushd ${ML_DIR}
 tox -e gpu 2>&1 | tee ${ML_LOG_FILE}
-retval=$?
 popd
-if [ $retval -ne 0 ]; then
-  echo 'ML Unit Tests failed.'
-else
-  echo 'ML Unit Tests passed.'
-fi
 
 ML_SCRIPT_PATH=$(dirname $(readlink -f "${ML_BASENAME}"))
 ENC_FILE_PATH=$(dirname $(dirname ${ML_SCRIPT_PATH}))/benchmarks-secrets.json.asc
 
 echo "Posting to Slack"
-python $ML_SCRIPT_PATH/send_notification.py -key $GIT_PERSONAL_TOKEN -encryptedfile $ENC_FILE_PATH -name "GPU Tests" -status $retval -logfile $ML_LOG_FILE
+python $ML_SCRIPT_PATH/send_notification.py -key $GIT_PERSONAL_TOKEN -encryptedfile $ENC_FILE_PATH -logfile $ML_LOG_FILE
 retval=$?
 if [ $retval -ne 0 ]; then
   echo 'ML Unit Tests Logs post to Slack failed.'
