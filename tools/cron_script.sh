@@ -50,8 +50,11 @@ echo 'Update benchmarks repository dependencies'
 git pull
 pip install -U -r requirements-dev.txt
 
+export CARGO_HOME=/home/qcat/.cargo
+echo "Environment CARGO_HOME=$CARGO_HOME"
 echo 'Add rust compiler location to PATH'
-export PATH="$HOME/.cargo/bin:$PATH"
+export PATH="$CARGO_HOME/bin:$PATH"
+echo "Environment PATH=$PATH"
 
 echo 'Run ML Unit tests script'
 . $CRON_SCRIPT_PATH/ml_unittests.sh $GIT_PERSONAL_TOKEN
