@@ -43,23 +43,42 @@ echo "Start script $CRON_BASENAME."
 # SIGTERM - program termination by kill
 trap 'rm -f "$CRON_LOCKFILE" >/dev/null 2>&1' EXIT HUP KILL INT QUIT TERM
 
-echo 'Activate environment'
-source /opt/benchmark/bin/activate
+set -e
 
-echo 'Update benchmarks repository dependencies'
-git pull
-pip install -U -r requirements-dev.txt
+echo 'Pull latest benchmarks repository files'
+git pull origin main --no-rebase
 
-export CARGO_HOME=/home/qcat/.cargo
-echo "Environment CARGO_HOME=$CARGO_HOME"
-echo 'Add rust compiler location to PATH'
-export PATH="$CARGO_HOME/bin:$PATH"
+echo 'Remove previous python environment if it exists'
+rm -rf /tmp/benchmarks-env
+
+echo 'Create python environment'
+python3 -m venv /tmp/benchmarks-env
+
+echo 'Activate python environment'
+source /tmp/benchmarks-env/bin/activate
+
+echo 'Upgrade pip'
+pip install -U pip
+
+echo "Environment HOME=$HOME"
+
+echo 'Install Rust'
+export CARGO_HOME=/tmp/cargo
+export RUSTUP_HOME=/tmp/rustup
+rm -rf $CARGO_HOME
+rm -rf $RUSTUP_HOME
+curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable --profile default --no-modify-path -y
+export PATH="$PATH:$CARGO_HOME/bin"
 echo "Environment PATH=$PATH"
+
+set +e
 
 echo 'Run ML Unit tests script'
 . $CRON_SCRIPT_PATH/ml_unittests.sh $GIT_PERSONAL_TOKEN
 
 echo 'Run benchmarks script'
 . $CRON_SCRIPT_PATH/benchmarks.sh $GIT_OWNER $GIT_USERID $GIT_PERSONAL_TOKEN
+
+set -e
 
 echo "End of $CRON_BASENAME script."

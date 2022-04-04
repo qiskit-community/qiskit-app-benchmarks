@@ -20,6 +20,11 @@ GIT_PERSONAL_TOKEN=$1
 
 echo "Start script $ML_BASENAME."
 
+set -e
+
+echo 'Update benchmarks repository dependencies'
+pip install -U -r requirements-dev.txt
+
 BASE_DIR=/tmp/ml
 mkdir -p ${BASE_DIR}
 FILE_PREFIX=ml_unittests_
@@ -34,9 +39,6 @@ rm -rf ${ML_DIR}
 echo 'Clone Qiskit Machine Learning'
 git clone https://github.com/Qiskit/qiskit-machine-learning.git ${ML_DIR}
 
-echo 'Install tox'
-pip install -U tox
-
 echo 'Run unit tests with tox'
 DATE=$(date +%Y%m%d%H%M%S)
 ML_LOG_FILE="${BASE_DIR}/${FILE_PREFIX}${DATE}${FILE_SUFFIX}"
@@ -47,7 +49,8 @@ popd
 ML_SCRIPT_PATH=$(dirname $(readlink -f "${ML_BASENAME}"))
 ENC_FILE_PATH=$(dirname $(dirname ${ML_SCRIPT_PATH}))/benchmarks-secrets.json.asc
 
-echo "Posting to Slack"
+set +e
+echo "Posting ML Unit tests to Slack"
 python $ML_SCRIPT_PATH/send_notification.py -key $GIT_PERSONAL_TOKEN -encryptedfile $ENC_FILE_PATH -logfile $ML_LOG_FILE
 retval=$?
 if [ $retval -ne 0 ]; then
@@ -55,6 +58,7 @@ if [ $retval -ne 0 ]; then
 else
   echo 'ML Unit Tests Logs post to Slack succeeded.'
 fi
+set -e
 
 echo 'Final cleanup'
 rm -rf ${ML_DIR}
