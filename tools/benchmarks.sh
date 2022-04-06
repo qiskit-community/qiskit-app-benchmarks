@@ -25,9 +25,6 @@ echo "Start script $BENCHMARK_BASENAME."
 
 set -e
 
-BENCHMARK_SCRIPT_PATH=$(dirname $(readlink -f "${BENCHMARK_BASENAME}"))
-ENC_FILE_PATH=$(dirname $(dirname ${BENCHMARK_SCRIPT_PATH}))/benchmarks-secrets.json.asc
-
 # find if asv is installed
 ASV_CMD="asv"
 if command -v $ASV_CMD > /dev/null 2>&1; then
@@ -78,7 +75,7 @@ mkdir /tmp/qiskit-app-benchmarks-html
 cp -r docs/_build/html/. /tmp/qiskit-app-benchmarks-html
 for TARGET in "${TARGETS[@]}"
 do
-  rm -rf /tmp/qiskit-app-benchmarks-html/TARGET
+  rm -rf /tmp/qiskit-app-benchmarks-html/$TARGET
 done
 cp -r /tmp/qiskit-app-benchmarks-html/. /tmp/qiskit-app-benchmarks
 
@@ -93,14 +90,6 @@ else
 fi
 popd
 
-BASE_DIR=/tmp/benchmarks-logs
-mkdir -p ${BASE_DIR}
-FILE_PREFIX=benchmarks_
-FILE_SUFFIX=.txt
-
-echo 'Remove benchmark output files older than 30 days'
-find ${BASE_DIR} -name ${FILE_PREFIX}*${FILE_SUFFIX} -maxdepth 1 -type f -mtime +30 -delete
-
 echo 'Run Benchmarks for domains'
 for TARGET in "${TARGETS[@]}"
 do
@@ -108,33 +97,25 @@ do
   if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
     date
     asv_result=0
-    DATE=$(date +%Y%m%d%H%M%S)
-    BENCHMARK_LOG_FILE="${BASE_DIR}/${FILE_PREFIX}${TARGET}_${DATE}${FILE_SUFFIX}"
-    set +e
     if [ -z "$ASV_QUICK" ]; then
       echo "Run Benchmarks for domain $TARGET"
-      $ASV_CMD run --show-stderr --launch-method spawn --record-samples NEW 2>&1 | tee ${BENCHMARK_LOG_FILE}
+      $ASV_CMD run --show-stderr --launch-method spawn --record-samples NEW && asv_result=$? || asv_result=$?
     else
       echo "Run Quick Benchmarks for domain $TARGET"
-      $ASV_CMD run --quick --show-stderr 2>&1 | tee ${BENCHMARK_LOG_FILE}
+      $ASV_CMD run --quick --show-stderr && asv_result=$? || asv_result=$?
     fi
-    asv_result=$?
     date
-    echo "Posting Benchmarks log to Slack"
-    python $BENCHMARK_SCRIPT_PATH/send_notification.py -key $GIT_PERSONAL_TOKEN -encryptedfile $ENC_FILE_PATH -logfile $BENCHMARK_LOG_FILE
-    retval=$?
-    if [ $retval -ne 0 ]; then
-      echo 'Benchmarks Logs post to Slack failed.'
-    else
-      echo 'Benchmarks Logs post to Slack succeeded.'
-    fi
-    set -e
-    echo "asv command returned $asv_result for domain $TARGET"
+    echo "$ASV_CMD returned $asv_result for domain $TARGET"
     if [ $asv_result == 0 ]; then
       echo "Publish Benchmark for domain $TARGET"
-      $ASV_CMD publish
-      rm -rf /tmp/qiskit-app-benchmarks/$TARGET/*
-      cp -r .asv/html/. /tmp/qiskit-app-benchmarks/$TARGET
+      retval=0
+      $ASV_CMD publish && retval=$? || retval=$?
+      if [ $retval == 0 ]; then
+        rm -rf /tmp/qiskit-app-benchmarks/$TARGET/*
+        cp -r .asv/html/. /tmp/qiskit-app-benchmarks/$TARGET
+      else
+        echo "$ASV_CMD failed to publish. Error:  $retval"
+      fi
     fi
   else
     rm -rf /tmp/qiskit-app-benchmarks/$TARGET/*
