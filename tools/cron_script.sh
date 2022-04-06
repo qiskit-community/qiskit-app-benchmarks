@@ -71,14 +71,45 @@ curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable --profile d
 export PATH="$PATH:$CARGO_HOME/bin"
 echo "Environment PATH=$PATH"
 
-set +e
+CRON_SCRIPT_PATH=$(dirname $(readlink -f "${CRON_BASENAME}"))
+ENC_FILE_PATH=$(dirname $(dirname ${CRON_SCRIPT_PATH}))/benchmarks-secrets.json.asc
 
-echo 'Run ML Unit tests script'
-. $CRON_SCRIPT_PATH/ml_unittests.sh $GIT_PERSONAL_TOKEN
+BASE_DIR=/tmp/cron-logs
+mkdir -p ${BASE_DIR}
+FILE_PREFIX=cron_
+FILE_SUFFIX=.txt
+
+echo 'Remove cron log files older than 30 days'
+find ${BASE_DIR} -name ${FILE_PREFIX}*${FILE_SUFFIX} -maxdepth 1 -type f -mtime +30 -delete
+
+DATE=$(date +%Y%m%d%H%M%S)
+
+CRON_LOG_FILE="${BASE_DIR}/${FILE_PREFIX}${DATE}_GPU${FILE_SUFFIX}"
+
+echo 'Run GPU Unit tests script'
+. $CRON_SCRIPT_PATH/ml_unittests.sh $GIT_PERSONAL_TOKEN 2>&1 | tee ${CRON_LOG_FILE} || true
+
+echo "Posting GPU logs to Slack"
+retval=0
+python $CRON_SCRIPT_PATH/send_notification.py -key $GIT_PERSONAL_TOKEN -encryptedfile $ENC_FILE_PATH -logfile $CRON_LOG_FILE && retval=$? || retval=$?
+if [ $retval -ne 0 ]; then
+  echo "GPU Logs post to Slack failed. Error:  $retval"
+else
+  echo 'GPU Logs post to Slack succeeded.'
+fi
+
+CRON_LOG_FILE="${BASE_DIR}/${FILE_PREFIX}${DATE}_ASV${FILE_SUFFIX}"
 
 echo 'Run benchmarks script'
-. $CRON_SCRIPT_PATH/benchmarks.sh $GIT_OWNER $GIT_USERID $GIT_PERSONAL_TOKEN
+. $CRON_SCRIPT_PATH/benchmarks.sh $GIT_OWNER $GIT_USERID $GIT_PERSONAL_TOKEN 2>&1 | tee ${CRON_LOG_FILE} || true
 
-set -e
+echo "Posting Benchmarks logs to Slack"
+retval=0
+python $CRON_SCRIPT_PATH/send_notification.py -key $GIT_PERSONAL_TOKEN -encryptedfile $ENC_FILE_PATH -logfile $CRON_LOG_FILE && retval=$? || retval=$?
+if [ $retval -ne 0 ]; then
+  echo "Benchmarks Logs post to Slack failed. Error:  $retval"
+else
+  echo 'Benchmarks Logs post to Slack succeeded.'
+fi
 
 echo "End of $CRON_BASENAME script."
