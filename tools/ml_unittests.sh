@@ -18,9 +18,9 @@
 ML_BASENAME=${BASH_SOURCE}
 GIT_PERSONAL_TOKEN=$1
 
-echo "Start script $ML_BASENAME."
-
 set -e
+
+echo "Start script $ML_BASENAME."
 
 echo 'Update benchmarks repository dependencies'
 pip install -U -r requirements-dev.txt
@@ -36,7 +36,7 @@ git clone https://github.com/Qiskit/qiskit-machine-learning.git ${ML_DIR}
 
 echo 'Run unit tests with tox'
 pushd ${ML_DIR}
-tox -e gpu || true
+tox -e gpu-amd || true
 popd
 
 echo 'Final cleanup'
