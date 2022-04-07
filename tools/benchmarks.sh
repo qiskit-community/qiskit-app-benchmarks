@@ -21,9 +21,12 @@ GIT_OWNER=$1
 GIT_USERID=$2
 GIT_PERSONAL_TOKEN=$3
 
+set -e
+
 echo "Start script $BENCHMARK_BASENAME."
 
-set -e
+echo 'Update benchmarks repository dependencies'
+pip install -U -r requirements-dev.txt
 
 # find if asv is installed
 ASV_CMD="asv"
@@ -40,15 +43,12 @@ else
   fi
 fi
 
-echo "echo $GIT_PERSONAL_TOKEN" > /tmp/.git-askpass
-chmod +x /tmp/.git-askpass
 export GIT_ASKPASS=/tmp/.git-askpass
+rm -f $GIT_ASKPASS
+echo "echo $GIT_PERSONAL_TOKEN" > $GIT_ASKPASS
+chmod +x $GIT_ASKPASS
 
-echo 'Update benchmarks repository dependencies'
-pip install -U -r requirements-dev.txt
-
-echo 'qiskit-app-benchmarks was already cloned in opt and is checkout to main branch'
-echo 'qiskit-app-benchmarks has a gh-pages branch with the html contents in it'
+echo 'qiskit-app-benchmarks has a gh-pages branch with the html benchmarks results in it.'
 
 make clean_sphinx
 make html SPHINXOPTS=-W
@@ -137,8 +137,8 @@ do
 done
 
 echo 'Final Cleanup'
+rm -f $GIT_ASKPASS
 unset GIT_ASKPASS
-rm /tmp/.git-askpass
 rm -rf /tmp/qiskit-app-benchmarks
 rm -rf /tmp/qiskit-app-benchmarks-html
 echo "End of $BENCHMARK_BASENAME script."
