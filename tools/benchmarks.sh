@@ -28,21 +28,6 @@ echo "Start script $BENCHMARK_BASENAME."
 echo 'Update benchmarks repository dependencies'
 pip install -U -r requirements-dev.txt
 
-# find if asv is installed
-ASV_CMD="asv"
-if command -v $ASV_CMD > /dev/null 2>&1; then
-  echo "asv command is available in known paths."
-else
-  ASV_CMD="/usr/local/bin/asv"
-  if command -v $ASV_CMD > /dev/null 2>&1; then
-    echo "asv command is available at $ASV_CMD"
-  else
-    echo "asv command not found in any known path."
-    echo "End of $BENCHMARK_BASENAME script."
-    exit 1
-  fi
-fi
-
 export GIT_ASKPASS=/tmp/.git-askpass
 rm -f $GIT_ASKPASS
 echo "echo $GIT_PERSONAL_TOKEN" > $GIT_ASKPASS
@@ -97,24 +82,26 @@ do
   if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
     date
     asv_result=0
+    echo "Update Benchmarks for domain $TARGET"
+    asv update && asv_result=$? || asv_result=$?
+    echo "asv update returned $asv_result for domain $TARGET"
+    asv_result=0
     if [ -z "$ASV_QUICK" ]; then
       echo "Run Benchmarks for domain $TARGET"
-      $ASV_CMD run --show-stderr --launch-method spawn --record-samples NEW && asv_result=$? || asv_result=$?
+      asv run --show-stderr --launch-method spawn --record-samples NEW && asv_result=$? || asv_result=$?
     else
       echo "Run Quick Benchmarks for domain $TARGET"
-      $ASV_CMD run --quick --show-stderr && asv_result=$? || asv_result=$?
+      asv run --quick --show-stderr && asv_result=$? || asv_result=$?
     fi
     date
-    echo "$ASV_CMD returned $asv_result for domain $TARGET"
+    echo "asv run returned $asv_result for domain $TARGET"
     if [ $asv_result == 0 ]; then
-      echo "Publish Benchmark for domain $TARGET"
-      retval=0
-      $ASV_CMD publish && retval=$? || retval=$?
-      if [ $retval == 0 ]; then
+      echo "Publish Benchmarks for domain $TARGET"
+      asv publish && asv_result=$? || asv_result=$?
+      echo "asv publish returned $asv_result for domain $TARGET"
+      if [ $asv_result == 0 ]; then
         rm -rf /tmp/qiskit-app-benchmarks/$TARGET/*
         cp -r .asv/html/. /tmp/qiskit-app-benchmarks/$TARGET
-      else
-        echo "$ASV_CMD failed to publish. Error:  $retval"
       fi
     fi
   else
