@@ -15,8 +15,7 @@ from abc import ABC
 from typing import Optional
 
 from qiskit.algorithms.optimizers import Optimizer
-from qiskit.circuit.library import RealAmplitudes, ZZFeatureMap
-from qiskit.utils import algorithm_globals
+from qiskit.circuit.library import ZZFeatureMap
 from qiskit_machine_learning.kernels import QuantumKernel
 from qiskit_machine_learning.kernels.algorithms import QuantumKernelTrainer
 from qiskit_machine_learning.algorithms import QSVC
@@ -71,7 +70,6 @@ class QKernelBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         num_inputs: int,
         quantum_instance_name: str,
         method: str,
-        optimizer: Optional[Optimizer] = None
     ) -> QuantumKernel:
         """Construct a QuantumKernel"""
         #here we can consider to add functions to be called for the kind of ansatz
