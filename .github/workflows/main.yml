@@ -61,7 +61,9 @@ jobs:
       - run:  pip check
         if: ${{ !cancelled() }}
         shell: bash
-      - run:  make copyright
+      - name: Copyright Check
+        run: |
+          python tools/check_copyright.py -check
         if: ${{ !cancelled() }}
         shell: bash
       - run:  make spell
@@ -122,6 +124,7 @@ jobs:
           pushd ${{ matrix.domain }}
           if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
             asv machine --yes
+            asv update || true 
             asv run --quick --show-stderr
           fi
           popd
