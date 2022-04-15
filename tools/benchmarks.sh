@@ -36,7 +36,7 @@ chmod +x $GIT_ASKPASS
 echo 'qiskit-app-benchmarks has a gh-pages branch with the html benchmarks results in it.'
 
 make clean_sphinx
-make html SPHINXOPTS=-W
+make html
 
 rm -rf /tmp/qiskit-app-benchmarks
 git clone https://$GIT_USERID@github.com/$GIT_OWNER/qiskit-app-benchmarks.git /tmp/qiskit-app-benchmarks
