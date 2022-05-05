@@ -78,14 +78,14 @@ class QsvcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         else:
             return ValueError(f"Unsupported method: {method}")
 
-    def _construct_QuantumKernel(
+    def _construct_qsvc(
         self,
         num_inputs: int,
         quantum_instance_name: str,
         method: str,
         optimizer: Optional[Optimizer] = None
     ) -> QSVC:
-        """Construct a QuantumKernel"""
+        """Construct a QSVC classifier."""
         #here we can consider to add functions to be called for the kind of ansatz
         # or the ansatz as input here whatever
         #we should also personalize the parameters in the quantum method
