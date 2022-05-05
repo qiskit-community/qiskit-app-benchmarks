@@ -55,7 +55,8 @@ class QsvcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         num_qubits = 1,) -> QuantumKernelTrainer:
         """This method returns the QuantumKernelTrainer"""
         kernel = self._construct_QuantumKernel(num_qubits, quantum_instance_name, method)
-        optimizer = optimizer #eg L_BFGS_B(maxiter=20) but we need also learning rate, perturbation etc.
+        optimizer = optimizer 
+        #L_BFGS_B(maxiter=20) but we need also learning rate, perturbation etc.
         # Instantiate a quantum kernel trainer.
         #look up how to put random initial parameters, seems simple just check
         qkt = QuantumKernelTrainer(quantum_kernel=kernel, loss=loss_function, optimizer = optimizer, initial_point=[np.pi / 2]) #initial random point
@@ -75,8 +76,8 @@ class QsvcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         if method == "quantumclassical":
             feature_map = ZZFeatureMap(num_inputs, reps=2, entanglement="linear")
             #quantum kernel, not parametrized
-            qk = QuantumKernel(feature_map=feature_map, quantum_instance=self.backends[quantum_instance_name])
-            return qk
+            qkernel = QuantumKernel(feature_map=feature_map, quantum_instance=self.backends[quantum_instance_name])
+            return qkernel
         elif method == "quantum":
             #super dumb parametrized start
             #<<<<<<<<<<<<<<<<< any number of qubits
@@ -87,8 +88,8 @@ class QsvcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
             fm1 = ZZFeatureMap(num_inputs, reps=2, entanglement="linear")
             feature_map = fm0.compose(fm1)
             #quantum kernel, parametrized
-            qk = QuantumKernel(feature_map = feature_map, user_parameters=user_params, quantum_instance=self.backends[quantum_instance_name])
-            return qk
+            qkernel = QuantumKernel(feature_map = feature_map, user_parameters=user_params, quantum_instance=self.backends[quantum_instance_name])
+            return qkernel
         else:
             return ValueError(f"Unsupported method: {method}")
 
