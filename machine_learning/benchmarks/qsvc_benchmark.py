@@ -37,7 +37,7 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
         ["qasm_simulator", "statevector_simulator"],
         ["QuantumKernel"]
     ]
-    param_names = ["dataset", "backend", "technique"]
+    param_names = ["dataset", "backend"]
 
     def __init__(self) -> None:
         super().__init__()
@@ -47,7 +47,7 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
         self.test_labels: Optional[np.ndarray] = None
         self.model: Optional[QuantumKernel] = None #ask   here model is declared, and called through setup
 
-    def setup(self, dataset: str, technique: str, quantum_instance_name: str) -> None:
+    def setup(self, dataset: str, quantum_instance_name: str) -> None:
         """Set up the benchmark."""
         self.train_features = self.datasets[dataset]["train_features"]
         self.train_labels = self.datasets[dataset]["train_labels"]
@@ -69,13 +69,13 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
         else:
             raise ValueError(f"Unsupported dataset: {dataset}")
             
-        file_name = f"qsvc_{technique}_{dataset}_{quantum_instance_name}.pickle"
+        file_name = f"qsvc_{dataset}_{quantum_instance_name}.pickle"
         with open(file_name, "rb") as file:
             self.result = pickle.load(file)  #model._fit_result <<<<<<<<<<<<<<<<<<<<<<<<<<
     ############# 
     def setup_cache(self) -> None:
         """Cache QSVC fitted model."""
-        for dataset, backend, technique in product(*self.params):
+        for dataset, backend in product(*self.params):
             train_features = self.datasets[dataset]["train_features"]
             train_labels = self.datasets[dataset]["train_labels"]
             #for now I put only 1 optimizer as they do, but this is fishy
@@ -98,7 +98,7 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
                 raise ValueError(f"Unsupported dataset: {dataset}")              
           
             result = model.fit(train_features, train_labels)
-            file_name = f"qsvc_{technique}_{dataset}_{backend}.pickle"
+            file_name = f"qsvc_{dataset}_{backend}.pickle"
             with open(file_name, "wb") as file:
                 pickle.dump(result, file)   ###### <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< this line is a mistery still
 
@@ -133,9 +133,9 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
 if __name__ == "__main__":
     bench = QsvcBenchmark()
     bench.setup_cache()
-    for dataset_name, backend_name, technique_name in product(*QsvcBenchmark.params):
+    for dataset_name, backend_name in product(*QsvcBenchmark.params):
         try:
-            bench.setup(dataset_name, technique_name, backend_name)
+            bench.setup(dataset_name, backend_name)
         except NotImplementedError:
             continue
 
