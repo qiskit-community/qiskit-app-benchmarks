@@ -32,8 +32,8 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
     version = 1
     timeout = 1200.0
     params = [
-        # Only the synthetic dataset now 
-        [DATASET_SYNTHETIC_CLASSIFICATION],
+        # Only one dataset now 
+        [DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION],
         ["qasm_simulator", "statevector_simulator"],
         ["QuantumKernel"]
     ]
@@ -56,12 +56,19 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
         #here I don't care about dataset, I just put the "num_qubits" in _construct_Q...()
         #I need to test but I bet is self.train_feature.shape[1] rofl
         n_qubits = self.train_features.shape[1]
-        if technique == "QuantumKernel":
+        if dataset == DATASET_SYNTHETIC_CLASSIFICATION:
             self.model = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, 
                                                                             num_qubits = n_qubits) #this is just a kernel matrix
-
+            model = QSVC(kernel = _kernel.evaluate)
+           
+        elif dataset == DATASET_IRIS_CLASSIFICATION:
+            self.model = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, 
+                                                                            num_qubits = n_qubits) #this is just a kernel matrix
+            model = QSVC(kernel = _kernel.evaluate)
+            
         else:
-            raise ValueError(f"Unsupported technique: {technique}")
+            raise ValueError(f"Unsupported dataset: {dataset}")
+            
         file_name = f"qsvc_{technique}_{dataset}_{quantum_instance_name}.pickle"
         with open(file_name, "rb") as file:
             self.result = pickle.load(file)  #model._fit_result <<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -73,17 +80,23 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
             train_labels = self.datasets[dataset]["train_labels"]
             #for now I put only 1 optimizer as they do, but this is fishy
             n_qubits = train_features.shape[1]
-            if dataset != DATASET_SYNTHETIC_CLASSIFICATION & dataset != DATASET_IRIS_CLASSIFICATION:
-                raise ValueError(f"Unsupported dataset: {dataset}")
+            
             #create model based on params
             #for now I directly create the classifier (so add svc in the quantum kernel method)
-            if technique == "QuantumKernel": 
+            if dataset == DATASET_SYNTHETIC_CLASSIFICATION:
+                _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= backend, 
+                                                                             optimizer = COBYLA(maxiter=200), 
+                                                                             num_qubits = n_qubits)
+                model = QSVC(kernel = _kernel.evaluate)
+                
+            elif dataset == DATASET_IRIS_CLASSIFICATION:
                 _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= backend, 
                                                                              optimizer = COBYLA(maxiter=200), 
                                                                              num_qubits = n_qubits)
                 model = QSVC(kernel = _kernel.evaluate)
             else:
-                 ValueError(f"Unsupported technique: {technique}")  
+                raise ValueError(f"Unsupported dataset: {dataset}")              
+          
             result = model.fit(train_features, train_labels)
             file_name = f"qsvc_{technique}_{dataset}_{backend}.pickle"
             with open(file_name, "wb") as file:
@@ -136,4 +149,5 @@ if __name__ == "__main__":
         ):
             elapsed = timeit(
                 f'bench.{method}("{dataset_name}", "{backend_name}")', number=10, globals=globals()
-            ) #for now I leave the args but then take them out
+            )
+            print(f"{method}:\t{elapsed}")
