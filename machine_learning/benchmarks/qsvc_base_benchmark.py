@@ -47,21 +47,6 @@ class QsvcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         #put here the function calling the quantum kernel matrix (Quantum Kernel)
         return kernelmatrix
 
-    def _construct_QuantumKernelTrainer(self,
-        quantum_instance_name: str,
-        optimizer: Optional[Optimizer] = None, 
-        loss_function: str = None,
-        method = "quantum", #do not modify
-        num_qubits = 1,) -> QuantumKernelTrainer:
-        """This method returns the QuantumKernelTrainer"""
-        kernel = self._construct_QuantumKernel(num_qubits, quantum_instance_name, method)
-        optimizer = optimizer 
-        #L_BFGS_B(maxiter=20) but we need also learning rate, perturbation etc.
-        # Instantiate a quantum kernel trainer.
-        #look up how to put random initial parameters, seems simple just check
-        qkt = QuantumKernelTrainer(quantum_kernel=kernel, loss=loss_function, optimizer = optimizer, initial_point=[np.pi / 2]) #initial random point
-        return qkt #use the QuantumKernel to return the classifier method
-
     def _construct_QuantumKernel(
         self,
         num_inputs: int,
@@ -93,3 +78,36 @@ class QsvcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         else:
             return ValueError(f"Unsupported method: {method}")
 
+    def _construct_QuantumKernel(
+        self,
+        num_inputs: int,
+        quantum_instance_name: str,
+        method: str,
+        optimizer: Optional[Optimizer] = None
+    ) -> QSVC:
+        """Construct a QuantumKernel"""
+        #here we can consider to add functions to be called for the kind of ansatz
+        # or the ansatz as input here whatever
+        #we should also personalize the parameters in the quantum method
+        if method == "quantumclassical":
+            feature_map = ZZFeatureMap(num_inputs, reps=2, entanglement="linear")
+            #quantum kernel, not parametrized
+            qkernel = QuantumKernel(feature_map=feature_map, quantum_instance=self.backends[quantum_instance_name])
+            model = QSVC(quantum_kernel=qkernel, kernel='sigmoid', gamma="auto", random_state=42)
+            return model
+        elif method == "quantum":
+            #super dumb parametrized start
+            #<<<<<<<<<<<<<<<<< any number of qubits
+            user_params = ParameterVector("θ", 1)
+            fm0 = QuantumCircuit(num_inputs)
+            for i in range(num_inputs):
+                fm0.ry(user_params[0], i)
+            fm1 = ZZFeatureMap(num_inputs, reps=2, entanglement="linear")
+            feature_map = fm0.compose(fm1)
+            #quantum kernel, parametrized
+            qkernel = QuantumKernel(feature_map = feature_map, user_parameters=user_params, quantum_instance=self.backends[quantum_instance_name])
+            model = QSVC(quantum_kernel=qkernel, kernel='sigmoid', gamma="auto", random_state=42)
+            return model
+        else:
+            return ValueError(f"Unsupported method: {method}")
+        
