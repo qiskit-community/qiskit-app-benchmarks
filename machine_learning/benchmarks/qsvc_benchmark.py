@@ -53,8 +53,7 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
         self.train_labels = self.datasets[dataset]["train_labels"]
         self.test_features = self.datasets[dataset]["test_features"]
         self.test_labels = self.datasets[dataset]["test_labels"]
-        #here I don't care about dataset, I just put the "num_qubits" in _construct_Q...()
-        #I need to test but I bet is self.train_feature.shape[1] rofl
+
         n_qubits = self.train_features.shape[1]
         if dataset == DATASET_SYNTHETIC_CLASSIFICATION:
             _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, 
