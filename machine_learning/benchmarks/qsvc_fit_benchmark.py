@@ -26,7 +26,7 @@ from qiskit_machine_learning.algorithms import QSVC
 from .qsvc_base_benchmark import QsvcBaseClassifierBenchmark
 
 
-class QsvcFitBenchmarks(QKernelBaseClassifierBenchmark):
+class QsvcFitBenchmarks(QsvcBaseClassifierBenchmark):
     """QSVC fit benchmarks."""
 
     version = 2
@@ -64,10 +64,10 @@ class QsvcFitBenchmarks(QKernelBaseClassifierBenchmark):
         #new
         n_qubits = self.train_features.shape[1]
         if  dataset == DATASET_SYNTHETIC_CLASSIFICATION:
-            self.model = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, optimizer = optimizer,
+            _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, optimizer = optimizer,
                                                             num_qubits = n_qubits) #this is just a kernel matrix
         elif dataset == DATASET_IRIS_CLASSIFICATION:
-            self.model = self._construct_QuantumKernelTrainer(quantum_instance_name= quantum_instance_name, optimizer= optimizer, 
+            _kernel = self._construct_QuantumKernelTrainer(quantum_instance_name= quantum_instance_name, optimizer= optimizer, 
                                                             num_qubits = n_qubits, 
                 ) #this is a classifier
         else:
@@ -77,7 +77,7 @@ class QsvcFitBenchmarks(QKernelBaseClassifierBenchmark):
     # pylint: disable=invalid-name
     def time_fit_qsvc(self, _, __, ___, ____):
         """Time fitting QSVC to data."""
-        self.model = QSVC(kernel = self.model.evaluate)
+        self.model = QSVC(kernel = _kernel.evaluate)
         self.model.fit(self.train_features, self.train_labels)
 
 
