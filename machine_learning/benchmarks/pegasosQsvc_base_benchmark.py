@@ -15,6 +15,8 @@ from abc import ABC
 from typing import Optional
 
 from qiskit_machine_learning.kernels import QuantumKernel
+from qiskit import QuantumCircuit
+from qiskit.circuit import ParameterVector, Parameter
 
 from qiskit.algorithms.optimizers import Optimizer
 from qiskit.circuit.library import ZZFeatureMap
