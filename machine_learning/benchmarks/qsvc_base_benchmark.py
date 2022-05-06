@@ -18,7 +18,7 @@ from qiskit import QuantumCircuit
 from qiskit.circuit import ParameterVector, Parameter
 
 from qiskit.algorithms.optimizers import Optimizer
-from qiskit.circuit.library import RealAmplitudes, ZZFeatureMap
+from qiskit.circuit.library import ZZFeatureMap
 from qiskit.utils import algorithm_globals
 from qiskit_machine_learning.algorithms import NeuralNetworkClassifier, QSVC
 from sklearn.pipeline import Pipeline
@@ -55,7 +55,6 @@ class QsvcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         num_inputs: int,
         quantum_instance_name: str,
         method: str,
-        optimizer: Optional[Optimizer] = None
     ) -> QuantumKernel:
         """Construct a QuantumKernel"""
         #here we can consider to add functions to be called for the kind of ansatz
@@ -86,7 +85,6 @@ class QsvcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         num_inputs: int,
         quantum_instance_name: str,
         method: str,
-        optimizer: Optional[Optimizer] = None
     ) -> QSVC:
         """Construct a QSVC classifier."""
         #here we can consider to add functions to be called for the kind of ansatz
