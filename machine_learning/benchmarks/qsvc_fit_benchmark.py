@@ -69,10 +69,10 @@ class QsvcFitBenchmarks(QsvcBaseClassifierBenchmark):
         n_qubits = self.train_features.shape[1]
         if  dataset == DATASET_SYNTHETIC_CLASSIFICATION:
             _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, optimizer = optimizer,
-                                                            loss_function = loss_function, num_qubits = n_qubits) #this is just a kernel matrix
+                                                           num_qubits = n_qubits) #this is just a kernel matrix
         elif dataset == DATASET_IRIS_CLASSIFICATION:
             _kernel = self._construct_QuantumKernelTrainer(quantum_instance_name= quantum_instance_name, optimizer= optimizer, 
-                                                            loss_function = loss_function, num_qubits = n_qubits, 
+                                                           num_qubits = n_qubits, 
                 ) #this is a classifier
         else:
             raise ValueError(f"Unsupported dataset: {dataset}")
