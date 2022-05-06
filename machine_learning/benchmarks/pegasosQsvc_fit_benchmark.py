@@ -26,7 +26,7 @@ from qiskit_machine_learning.algorithms import PegasosQSVC
 from .pegasosQsvc_base_benchmark import PegasosQsvcBaseClassifierBenchmark
 
 
-class PegasosQsvcFitBenchmarks(QKernelBaseClassifierBenchmark):
+class PegasosQsvcFitBenchmarks(PegasosQsvcBaseClassifierBenchmark):
     """PegasosQSVC fit benchmarks."""
 
     version = 2
@@ -64,10 +64,10 @@ class PegasosQsvcFitBenchmarks(QKernelBaseClassifierBenchmark):
         #new
         n_qubits = self.train_features.shape[1]
         if  dataset == DATASET_SYNTHETIC_CLASSIFICATION:
-            self.model = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, optimizer = optimizer,
+            _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, optimizer = optimizer,
                                                             num_qubits = n_qubits) #this is just a kernel matrix
         elif dataset == DATASET_IRIS_CLASSIFICATION:
-            self.model = self._construct_QuantumKernelTrainer(quantum_instance_name= quantum_instance_name, optimizer= optimizer, 
+            _kernel = self._construct_QuantumKernelTrainer(quantum_instance_name= quantum_instance_name, optimizer= optimizer, 
                                                             num_qubits = n_qubits, 
                 ) #this is a classifier
         else:
@@ -77,7 +77,7 @@ class PegasosQsvcFitBenchmarks(QKernelBaseClassifierBenchmark):
     # pylint: disable=invalid-name
     def time_fit_pegasosQsvc(self, _, __, ___, ____):
         """Time fitting QSVC to data."""
-        self.model = PegasosQSVC(kernel = self.model.evaluate)
+        self.model = PegasosQSVC(kernel = _kernel.evaluate)
         self.model.fit(self.train_features, self.train_labels)
 
 
