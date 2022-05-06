@@ -85,13 +85,13 @@ class PegasosQsvcBenchmarks(PegasosQsvcBaseClassifierBenchmark):
                 _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= backend, 
                                                                              optimizer = COBYLA(maxiter=200), 
                                                                              num_qubits = n_qubits)
-                model = PegasosQSVC(kernel = _kernel)
+                model = PegasosQSVC(kernel = _kernel.evaluate)
                 
             elif dataset == DATASET_IRIS_CLASSIFICATION:
                 _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= backend, 
                                                                              optimizer = COBYLA(maxiter=200), 
                                                                              num_qubits = n_qubits)
-                model = PegasosQSVC(kernel = _kernel)
+                model = PegasosQSVC(kernel = _kernel.evaluate)
             else:
                 raise ValueError(f"Unsupported dataset: {dataset}")              
           
