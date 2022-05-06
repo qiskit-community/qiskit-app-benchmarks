@@ -71,7 +71,7 @@ class QsvcFitBenchmarks(QsvcBaseClassifierBenchmark):
             _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, optimizer = optimizer,
                                                            num_qubits = n_qubits) #this is just a kernel matrix
         elif dataset == DATASET_IRIS_CLASSIFICATION:
-            _kernel = self._construct_QuantumKernelTrainer(quantum_instance_name= quantum_instance_name, optimizer= optimizer, 
+            _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, optimizer= optimizer, 
                                                            num_qubits = n_qubits, 
                 ) #this is a classifier
         else:
