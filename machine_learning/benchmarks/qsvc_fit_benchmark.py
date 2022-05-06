@@ -35,7 +35,6 @@ class QsvcFitBenchmarks(QsvcBaseClassifierBenchmark):
         # Only the synthetic dataset now
         [DATASET_SYNTHETIC_CLASSIFICATION],
         ["qasm_simulator", "statevector_simulator"],
-        ["QuantumKernel"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
         ["cross_entropy", "squared_error"],
     )
