@@ -33,7 +33,7 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
     timeout = 1200.0
     params = [
         # Only one dataset now 
-        [DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION],
+        [DATASET_SYNTHETIC_CLASSIFICATION],
         ["qasm_simulator", "statevector_simulator"],
         ["QuantumKernel"]
     ]
