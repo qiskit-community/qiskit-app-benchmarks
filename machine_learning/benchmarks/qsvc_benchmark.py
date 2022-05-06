@@ -57,12 +57,12 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
         if dataset == DATASET_SYNTHETIC_CLASSIFICATION:
             _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, 
                                                                             num_qubits = n_qubits) #this is just a kernel matrix
-            model = _kernel
+            model = QSVC(kernel = _kernel.evaluate)
            
         elif dataset == DATASET_IRIS_CLASSIFICATION:
             _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, 
                                                                             num_qubits = n_qubits) #this is just a kernel matrix
-            model = _kernel
+            model = QSVC(kernel = _kernel.evaluate)
             
         else:
             raise ValueError(f"Unsupported dataset: {dataset}")
@@ -85,13 +85,13 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
                 _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= backend, 
                                                                              optimizer = COBYLA(maxiter=200), 
                                                                              num_qubits = n_qubits)
-                model = QSVC(kernel = _kernel)
+                model = QSVC(kernel = _kernel.evaluate)
                 
             elif dataset == DATASET_IRIS_CLASSIFICATION:
                 _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= backend, 
                                                                              optimizer = COBYLA(maxiter=200), 
                                                                              num_qubits = n_qubits)
-                model = QSVC(kernel = _kernel)
+                model = QSVC(kernel = _kernel.evaluate)
             else:
                 raise ValueError(f"Unsupported dataset: {dataset}")              
           
