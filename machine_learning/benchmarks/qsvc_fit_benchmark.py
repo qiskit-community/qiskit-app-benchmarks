@@ -59,7 +59,6 @@ class QsvcFitBenchmarks(QsvcBaseClassifierBenchmark):
         dataset: str, 
         quantum_instance_name: str, 
         optimizer: str, 
-        loss_function: str
     ) -> None:
         """Set up the benchmark."""
         self.train_features = self.datasets[dataset]["train_features"]
