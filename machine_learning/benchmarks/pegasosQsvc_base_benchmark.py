@@ -13,6 +13,7 @@
 """Base class for PegasosQSVC based classifier benchmarks."""
 from abc import ABC
 from typing import Optional
+from qiskit_machine_learning.kernels import QuantumKernel
 
 from qiskit.algorithms.optimizers import Optimizer
 from qiskit.circuit.library import RealAmplitudes, ZZFeatureMap
