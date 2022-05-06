@@ -17,17 +17,16 @@ from typing import Optional, Union
 
 import numpy as np
 from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B, NELDER_MEAD
-#from qiskit_machine_learning.algorithms import NeuralNetworkClassifier
 
 from .base_classifier_benchmark import DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION
 from qiskit_machine_learning.kernels import QuantumKernel
-from qiskit_machine_learning.kernels.algorithms import QuantumKernelTrainer
+
 from qiskit_machine_learning.algorithms import QSVC
 
-from .Leo_base_benchmark import QKernelBaseClassifierBenchmark
+from .qsvc_base_benchmark import QsvcBaseClassifierBenchmark
 
 
-class QKernelFitBenchmarks(QKernelBaseClassifierBenchmark):
+class QsvcFitBenchmarks(QKernelBaseClassifierBenchmark):
     """QSVC fit benchmarks."""
 
     version = 2
@@ -36,7 +35,7 @@ class QKernelFitBenchmarks(QKernelBaseClassifierBenchmark):
         # Only the synthetic dataset now
         [DATASET_SYNTHETIC_CLASSIFICATION],
         ["qasm_simulator", "statevector_simulator"],
-         ["QuantumKernel", "QuantumKernelTraining" ],
+        ["QuantumKernel"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
         ["cross_entropy", "squared_error"],
     )
@@ -67,7 +66,7 @@ class QKernelFitBenchmarks(QKernelBaseClassifierBenchmark):
         if  dataset == DATASET_SYNTHETIC_CLASSIFICATION:
             self.model = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, optimizer = optimizer,
                                                             num_qubits = n_qubits) #this is just a kernel matrix
-         elif dataset == DATASET_IRIS_CLASSIFICATION:
+        elif dataset == DATASET_IRIS_CLASSIFICATION:
             self.model = self._construct_QuantumKernelTrainer(quantum_instance_name= quantum_instance_name, optimizer= optimizer, 
                                                             num_qubits = n_qubits, 
                 ) #this is a classifier
@@ -84,9 +83,9 @@ class QKernelFitBenchmarks(QKernelBaseClassifierBenchmark):
 
 if __name__ == "__main__":
     for dataset_name, backend_name, optimizer_name, loss_function_name in product(
-        *QKernelFitBenchmarks.params
+        *QsvcFitBenchmarks.params
     ):
-        bench = QKernelFitBenchmarks()
+        bench = QsvcFitBenchmarks()
         try:
             bench.setup(dataset_name, backend_name, optimizer_name, loss_function_name)
         except NotImplementedError:
