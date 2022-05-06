@@ -17,7 +17,7 @@ from typing import Optional
 from qiskit_machine_learning.kernels import QuantumKernel
 
 from qiskit.algorithms.optimizers import Optimizer
-from qiskit.circuit.library import RealAmplitudes, ZZFeatureMap
+from qiskit.circuit.library import ZZFeatureMap
 from qiskit.utils import algorithm_globals
 from qiskit_machine_learning.algorithms import NeuralNetworkClassifier, PegasosQSVC
 from sklearn.pipeline import Pipeline
@@ -55,7 +55,6 @@ class PegasosQsvcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         num_inputs: int,
         quantum_instance_name: str,
         method: str,
-        optimizer: Optional[Optimizer] = None
     ) -> QuantumKernel:
         """Construct a QuantumKernel"""
         #here we can consider to add functions to be called for the kind of ansatz
@@ -86,7 +85,6 @@ class PegasosQsvcBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         num_inputs: int,
         quantum_instance_name: str,
         method: str,
-        optimizer: Optional[Optimizer] = None
     ) -> PegasosQSVC:
         """Construct a QSVC classifier."""
         #here we can consider to add functions to be called for the kind of ansatz
