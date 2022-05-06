@@ -45,7 +45,7 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
         self.train_labels: Optional[np.ndarray] = None
         self.test_features: Optional[np.ndarray] = None
         self.test_labels: Optional[np.ndarray] = None
-        self.model: Optional[QuantumKernel] = None #ask   here model is declared, and called through setup
+        self.model: Optional[QuantumKernel] = None 
 
     def setup(self, dataset: str, quantum_instance_name: str) -> None:
         """Set up the benchmark."""
@@ -71,8 +71,8 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
             
         file_name = f"qsvc_{dataset}_{quantum_instance_name}.pickle"
         with open(file_name, "rb") as file:
-            self.result = pickle.load(file)  #model._fit_result <<<<<<<<<<<<<<<<<<<<<<<<<<
-    ############# 
+            self.result = pickle.load(file)  
+            
     def setup_cache(self) -> None:
         """Cache QSVC fitted model."""
         for dataset, backend in product(*self.params):
@@ -100,7 +100,7 @@ class QsvcBenchmark(QsvcBaseClassifierBenchmark):
             result = model.fit(train_features, train_labels)
             file_name = f"qsvc_{dataset}_{backend}.pickle"
             with open(file_name, "wb") as file:
-                pickle.dump(result, file)   ###### <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< this line is a mistery still
+                pickle.dump(result, file)  
 
     # pylint: disable=invalid-name
     def time_score_qsvc_classifier(self, _, __):
