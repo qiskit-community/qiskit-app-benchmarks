@@ -150,4 +150,5 @@ if __name__ == "__main__":
             elapsed = timeit(
                 f'bench.{method}("{dataset_name}", "{backend_name}")', number=10, globals=globals()
             )
+            
             print(f"{method}:\t{elapsed}")
