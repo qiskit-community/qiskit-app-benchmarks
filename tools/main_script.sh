@@ -33,19 +33,8 @@ source /tmp/benchmarks-env/bin/activate
 echo 'Upgrade pip'
 pip install -U pip
 
-echo "Environment HOME=$HOME"
-
-echo 'Install Rust'
-export CARGO_HOME=/tmp/cargo
-export RUSTUP_HOME=/tmp/rustup
-rm -rf $CARGO_HOME
-rm -rf $RUSTUP_HOME
-curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable --profile default --no-modify-path -y
-export PATH="$PATH:$CARGO_HOME/bin"
-echo "Environment PATH=$PATH"
-
-MAIN_SCRIPT_PATH=$(dirname $(readlink -f "${MAIN_BASENAME}"))
-ENC_FILE_PATH=$(dirname $(dirname ${MAIN_SCRIPT_PATH}))/benchmarks-secrets.json.asc
+echo 'Update benchmarks repository dependencies'
+pip install -U -r requirements-dev.txt
 
 BASE_DIR=/tmp/cron-logs
 mkdir -p ${BASE_DIR}
@@ -55,7 +44,42 @@ FILE_SUFFIX=.txt
 echo 'Remove cron log files older than 30 days'
 find ${BASE_DIR} -name ${FILE_PREFIX}*${FILE_SUFFIX} -maxdepth 1 -type f -mtime +30 -delete
 
+MAIN_SCRIPT_PATH=$(dirname $(readlink -f "${MAIN_BASENAME}"))
+ENC_FILE_PATH=$(dirname $(dirname ${MAIN_SCRIPT_PATH}))/benchmarks-secrets.json.asc
+
 DATE=$(date +%Y%m%d%H%M%S)
+
+echo "Environment HOME=$HOME"
+
+echo 'Install Rust'
+export CARGO_HOME=/tmp/cargo
+export RUSTUP_HOME=/tmp/rustup
+rm -rf $CARGO_HOME
+rm -rf $RUSTUP_HOME
+
+MAIN_LOG_FILE="${BASE_DIR}/${FILE_PREFIX}${DATE}_RUST${FILE_SUFFIX}"
+
+echo 'Run Install Rust script'
+rust_retval=0
+. $MAIN_SCRIPT_PATH/install_rust.sh 2>&1 | tee ${MAIN_LOG_FILE}  && rust_retval=$? || rust_retval=$?
+
+export PATH="$PATH:$CARGO_HOME/bin"
+echo "Environment PATH=$PATH"
+
+echo "Posting Rust install to Slack"
+retval=0
+python $MAIN_SCRIPT_PATH/send_notification.py -key $GIT_PERSONAL_TOKEN -encryptedfile $ENC_FILE_PATH -logfile $MAIN_LOG_FILE && retval=$? || retval=$?
+if [ $retval -ne 0 ]; then
+  echo "Rust Install post to Slack failed. Error: $retval"
+else
+  echo 'Rust Install post to Slack succeeded.'
+fi
+
+if [ $rust_retval -ne 0 ]; then
+  echo "Rust Install failed. Error: $rust_retval"
+  echo "End of $MAIN_BASENAME script."
+  return $rust_retval
+fi
 
 MAIN_LOG_FILE="${BASE_DIR}/${FILE_PREFIX}${DATE}_GPU${FILE_SUFFIX}"
 
@@ -66,7 +90,7 @@ echo "Posting GPU logs to Slack"
 retval=0
 python $MAIN_SCRIPT_PATH/send_notification.py -key $GIT_PERSONAL_TOKEN -encryptedfile $ENC_FILE_PATH -logfile $MAIN_LOG_FILE && retval=$? || retval=$?
 if [ $retval -ne 0 ]; then
-  echo "GPU Logs post to Slack failed. Error:  $retval"
+  echo "GPU Logs post to Slack failed. Error: $retval"
 else
   echo 'GPU Logs post to Slack succeeded.'
 fi
@@ -80,7 +104,7 @@ echo "Posting Benchmarks logs to Slack"
 retval=0
 python $MAIN_SCRIPT_PATH/send_notification.py -key $GIT_PERSONAL_TOKEN -encryptedfile $ENC_FILE_PATH -logfile $MAIN_LOG_FILE && retval=$? || retval=$?
 if [ $retval -ne 0 ]; then
-  echo "Benchmarks Logs post to Slack failed. Error:  $retval"
+  echo "Benchmarks Logs post to Slack failed. Error: $retval"
 else
   echo 'Benchmarks Logs post to Slack succeeded.'
 fi
