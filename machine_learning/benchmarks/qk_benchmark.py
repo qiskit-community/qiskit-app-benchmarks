@@ -18,7 +18,6 @@ from qiskit_machine_learning.kernels import QuantumKernel
 from qiskit_machine_learning.kernels.algorithms import QuantumKernelTrainer
 import numpy as np
 from qiskit.algorithms.optimizers import COBYLA
-#from qiskit_machine_learning.algorithms import NeuralNetworkClassifier
 from qiskit_machine_learning.algorithms import QSVC
 from sklearn.metrics import precision_score, recall_score, f1_score
 from sympy import evaluate
@@ -31,8 +30,7 @@ class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
     version = 1
     timeout = 1200.0
     params = [
-        # Only the synthetic dataset now (I'm following vqc) just data import
-        [DATASET_SYNTHETIC_CLASSIFICATION],
+        [DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION],
         ["qasm_simulator", "statevector_simulator"],
         ["QuantumKernel", "QuantumKernelTraining" ]
     ]
@@ -54,11 +52,11 @@ class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
         self.test_labels = self.datasets[dataset]["test_labels"]
         n_qubits = self.train_features.shape[1]
         if technique == "QuantumKernel":
-            self.model = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= quantum_instance_name, 
-                                                                            num_qubits = n_qubits) #this is just a kernel matrix
+            self.model = self._construct_QuantumKernel_classical_classifier(quantum_instance_name = quantum_instance_name, 
+                                                num_qubits = n_qubits) 
         elif technique == "QuantumKernelTraining":
             self.model = self._construct_QuantumKernelTrainer(quantum_instance_name= quantum_instance_name,
-                                                                            num_qubits = n_qubits) #this is a classifier
+                                                num_qubits = n_qubits) 
         else:
             raise ValueError(f"Unsupported technique: {technique}")
         file_name = f"qk_{technique}_{dataset}_{quantum_instance_name}.pickle"
@@ -70,21 +68,18 @@ class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
         for dataset, backend, technique in product(*self.params):
             train_features = self.datasets[dataset]["train_features"]
             train_labels = self.datasets[dataset]["train_labels"]
-            #for now I put only 1 optimizer as they do, but this is fishy
             n_qubits = train_features.shape[1]
             if dataset != DATASET_SYNTHETIC_CLASSIFICATION & dataset != DATASET_IRIS_CLASSIFICATION:
                 raise ValueError(f"Unsupported dataset: {dataset}")
-            #create model based on params
-            #for now I directly create the classifier (so add svc in the quantum kernel method)
             if technique == "QuantumKernel": 
                 _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= backend, 
-                                                                             optimizer = COBYLA(maxiter=200), 
-                                                                             num_qubits = n_qubits)
-                model = _kernel #QSVC(kernel = _kernel.evaluate)
+                                optimizer = COBYLA(maxiter=200), 
+                                num_qubits = n_qubits)
+                model = _kernel
             elif technique == "QuantumKernelTraining":
                 model = self._construct_QuantumKernelTrainer(quantum_instance_name= backend, 
-                                                             optimizer=COBYLA(maxiter=200), 
-                                                             num_qubits = n_qubits )
+                                                optimizer=COBYLA(maxiter=200), 
+                                                num_qubits = n_qubits )
             else:
                  ValueError(f"Unsupported technique: {technique}")  
             result = model.fit(train_features, train_labels)
@@ -139,4 +134,4 @@ if __name__ == "__main__":
         ):
             elapsed = timeit(
                 f'bench.{method}("{dataset_name}", "{backend_name}")', number=10, globals=globals()
-            ) #for now I leave the args but then take them out
+            ) 
