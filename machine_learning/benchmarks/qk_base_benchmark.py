@@ -18,11 +18,11 @@ from qiskit.algorithms.optimizers import Optimizer
 from qiskit.circuit.library import ZZFeatureMap
 from qiskit_machine_learning.kernels import QuantumKernel
 from qiskit_machine_learning.kernels.algorithms import QuantumKernelTrainer
-from qiskit_machine_learning.algorithms import QSVC
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, FunctionTransformer
 from qiskit import QuantumCircuit
 from qiskit.circuit import ParameterVector
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, FunctionTransformer
+
 import numpy as np
 
 from .base_classifier_benchmark import BaseClassifierBenchmark
@@ -37,33 +37,29 @@ class QKernelBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         super().__init__(
             synthetic_label_encoder=Pipeline([("reshape", reshaper), ("one hot", encoder)]),
             iris_num_classes=2,
-            iris_label_encoder=Pipeline([("reshape", reshaper), ("one hot", encoder)]),
-        )
-        
-    def _construct_QuantumKernel_classical_classifier(self,                                             
-        quantum_instance_name: str,
+            iris_label_encoder=Pipeline([("reshape", reshaper), ("one hot", encoder)]),)
+    def _construct_quantumkernel_classical_classifier(self,                              
+        quantum_instance_name:str,
         optimizer: Optional[Optimizer] = None,
-        method = "quantumclassical", 
+        method = "quantumclassical",
         num_qubits = 1, ) -> QuantumKernel:
         """This method just create the matrix from the quantum kernel"""
-        kernelmatrix = self._construct_QuantumKernel(num_qubits,
+        kernelmatrix = self._construct_quantumkernel(num_qubits,
                                                      quantum_instance_name, method)
         return kernelmatrix
-    
-    def _construct_QuantumKernelTrainer(self,
+    def _construct_quantumkerneltrainer(self,
         quantum_instance_name: str,
-        optimizer: Optional[Optimizer] = None, 
+        optimizer: Optional[Optimizer] = None,
         loss_function: str = None,
-        method = "quantum", 
+        method = "quantum",
         num_qubits = 1,) -> QuantumKernelTrainer:
-        """This method returns the QuantumKernelTrainer"""
-        kernel = self._construct_QuantumKernel(num_qubits, quantum_instance_name, method)
+        """This method returns the quantumkerneltrainer"""
+        kernel = self._construct_quantumkernel(num_qubits, quantum_instance_name, method)
         optimizer = optimizer
-        qkt = QuantumKernelTrainer(quantum_kernel=kernel, loss=loss_function, 
+        qkt = QuantumKernelTrainer(quantum_kernel=kernel, loss=loss_function,
                     optimizer = optimizer, initial_point=[np.pi / 2])
-        return qkt 
-    
-    def _construct_QuantumKernel(
+        return qkt
+    def _construct_quantumkernel(
         self,
         num_inputs: int,
         quantum_instance_name: str,
@@ -72,8 +68,8 @@ class QKernelBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         """Construct a QuantumKernel"""
         if method == "quantumclassical":
             feature_map = ZZFeatureMap(num_inputs, reps=2, entanglement="linear")
-            qkernel = QuantumKernel(feature_map=feature_map, 
-                    quantum_instance=self.backends[quantum_instance_name])
+            qkernel = QuantumKernel(feature_map=feature_map,
+            quantum_instance=self.backends[quantum_instance_name])
             return qkernel
         elif method == "quantum":
             user_params = ParameterVector("θ", 1)
@@ -83,7 +79,7 @@ class QKernelBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
             fm1 = ZZFeatureMap(num_inputs, reps=2, entanglement="linear")
             feature_map = fm0.compose(fm1)
             qkernel = QuantumKernel(feature_map = feature_map,
-                    user_parameters=user_params, 
+                    user_parameters=user_params,
                     quantum_instance=self.backends[quantum_instance_name])
             return qkernel
         else:

@@ -16,12 +16,11 @@ from timeit import timeit
 from typing import Optional, Union
 from qiskit_machine_learning.kernels import QuantumKernel
 from qiskit_machine_learning.kernels.algorithms import QuantumKernelTrainer
-import numpy as np
 from qiskit.algorithms.optimizers import COBYLA
 from qiskit_machine_learning.algorithms import QSVC
 from sklearn.metrics import precision_score, recall_score, f1_score
 from sympy import evaluate
-
+import numpy as np
 from .base_classifier_benchmark import DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION
 from .qk_base_benchmark import QKernelBaseClassifierBenchmark
 
@@ -42,8 +41,7 @@ class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
         self.train_labels: Optional[np.ndarray] = None
         self.test_features: Optional[np.ndarray] = None
         self.test_labels: Optional[np.ndarray] = None
-        self.model: Optional[Union[QuantumKernel, QuantumKernelTrainer]] = None 
-
+        self.model: Optional[Union[QuantumKernel, QuantumKernelTrainer]] = None
     def setup(self, dataset: str, technique: str, quantum_instance_name: str) -> None:
         """Set up the benchmark."""
         self.train_features = self.datasets[dataset]["train_features"]
@@ -52,17 +50,18 @@ class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
         self.test_labels = self.datasets[dataset]["test_labels"]
         n_qubits = self.train_features.shape[1]
         if technique == "QuantumKernel":
-            self.model = self._construct_QuantumKernel_classical_classifier(quantum_instance_name = quantum_instance_name, 
-                                                num_qubits = n_qubits) 
+            self.model = self._construct_quantumkernel_classical_classifier(quantum_instance_name =
+                                                quantum_instance_name,
+            num_qubits = n_qubits)
         elif technique == "QuantumKernelTraining":
-            self.model = self._construct_QuantumKernelTrainer(quantum_instance_name= quantum_instance_name,
-                                                num_qubits = n_qubits) 
+            self.model = self._construct_quantumkerneltrainer(quantum_instance_name=
+                                                quantum_instance_name,
+                                                num_qubits = n_qubits)
         else:
             raise ValueError(f"Unsupported technique: {technique}")
         file_name = f"qk_{technique}_{dataset}_{quantum_instance_name}.pickle"
         with open(file_name, "rb") as file:
-            self.result = pickle.load(file) 
-    
+            self.result = pickle.load(file)
     def setup_cache(self) -> None:
         """Cache qk&svm or qkt fitted model."""
         for dataset, backend, technique in product(*self.params):
@@ -71,22 +70,22 @@ class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
             n_qubits = train_features.shape[1]
             if dataset != DATASET_SYNTHETIC_CLASSIFICATION & dataset != DATASET_IRIS_CLASSIFICATION:
                 raise ValueError(f"Unsupported dataset: {dataset}")
-            if technique == "QuantumKernel": 
-                _kernel = self._construct_QuantumKernel_classical_classifier(quantum_instance_name= backend, 
-                                optimizer = COBYLA(maxiter=200), 
+            if technique == "QuantumKernel":
+                _kernel = self._construct_quantumkernel_classical_classifier(quantum_instance_name=
+                                backend,
+                                optimizer = COBYLA(maxiter=200),
                                 num_qubits = n_qubits)
                 model = _kernel
             elif technique == "QuantumKernelTraining":
-                model = self._construct_QuantumKernelTrainer(quantum_instance_name= backend, 
-                                                optimizer=COBYLA(maxiter=200), 
-                                                num_qubits = n_qubits )
+                model = self._construct_quantumkerneltrainer(quantum_instance_name= backend,
+                                                optimizer=COBYLA(maxiter=200),
+                                                num_qubits = n_qubits)
             else:
-                 ValueError(f"Unsupported technique: {technique}")  
+                ValueError(f"Unsupported technique: {technique}")
             result = model.fit(train_features, train_labels)
             file_name = f"qk_{technique}_{dataset}_{backend}.pickle"
             with open(file_name, "wb") as file:
-                pickle.dump(result, file) 
-                
+                pickle.dump(result, file)
     # pylint: disable=invalid-name
     def time_score_vqc_classifier(self, _, __):
         """Time scoring VQC on data."""
@@ -114,7 +113,6 @@ class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
         """Tracks the f1 score for each class of the classification results."""
         predicts = QSVC(kernel = self.model).predict(self.test_features)
         return f1_score(y_true=self.test_labels, y_pred=predicts, average="micro")
-    
 if __name__ == "__main__":
     bench = QKernelBenchmarks()
     bench.setup_cache()
@@ -123,7 +121,6 @@ if __name__ == "__main__":
             bench.setup(dataset_name, technique_name, backend_name)
         except NotImplementedError:
             continue
-
         for method in (
             "time_score_vqc_classifier",
             "time_predict_vqc_classifier",
@@ -134,4 +131,4 @@ if __name__ == "__main__":
         ):
             elapsed = timeit(
                 f'bench.{method}("{dataset_name}", "{backend_name}")', number=10, globals=globals()
-            ) 
+            )
