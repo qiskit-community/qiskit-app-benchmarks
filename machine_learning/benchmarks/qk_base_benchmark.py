@@ -40,7 +40,6 @@ class QKernelBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
             iris_label_encoder=Pipeline([("reshape", reshaper), ("one hot", encoder)]),)
     def _construct_quantumkernel_classical_classifier(self,                          
         quantum_instance_name:str,
-        optimizer: Optional[Optimizer] = None,
         method = "quantumclassical",
         num_qubits = 1, ) -> QuantumKernel:
         """This method just create the matrix from the quantum kernel"""
@@ -55,7 +54,6 @@ class QKernelBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         num_qubits = 1,) -> QuantumKernelTrainer:
         """This method returns the quantumkerneltrainer"""
         kernel = self._construct_quantumkernel(num_qubits, quantum_instance_name, method)
-        optimizer = optimizer
         qkt = QuantumKernelTrainer(quantum_kernel=kernel, loss=loss_function,
                     optimizer = optimizer, initial_point=[np.pi / 2])
         return qkt
