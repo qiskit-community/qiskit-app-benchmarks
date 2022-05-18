@@ -72,9 +72,7 @@ class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
                 raise ValueError(f"Unsupported dataset: {dataset}")
             if technique == "QuantumKernel":
                 _kernel = self._construct_quantumkernel_classical_classifier(quantum_instance_name=
-                                backend,
-                                optimizer = COBYLA(maxiter=200),
-                                num_qubits = n_qubits)
+                                backend, num_qubits = n_qubits)
                 model = _kernel
             elif technique == "QuantumKernelTraining":
                 model = self._construct_quantumkerneltrainer(quantum_instance_name= backend,
