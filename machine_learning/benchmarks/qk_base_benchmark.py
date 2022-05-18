@@ -38,7 +38,7 @@ class QKernelBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
             synthetic_label_encoder=Pipeline([("reshape", reshaper), ("one hot", encoder)]),
             iris_num_classes=2,
             iris_label_encoder=Pipeline([("reshape", reshaper), ("one hot", encoder)]),)
-    def _construct_quantumkernel_classical_classifier(self,                          
+    def _construct_quantumkernel_classical_classifier(self,                      
         quantum_instance_name:str,
         method = "quantumclassical",
         num_qubits = 1, ) -> QuantumKernel:
