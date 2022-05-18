@@ -37,26 +37,37 @@ class QKernelBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         super().__init__(
             synthetic_label_encoder=Pipeline([("reshape", reshaper), ("one hot", encoder)]),
             iris_num_classes=2,
-            iris_label_encoder=Pipeline([("reshape", reshaper), ("one hot", encoder)]),)
-    def _construct_quantumkernel_classical_classifier(self,                      
-        quantum_instance_name:str,
-        method = "quantumclassical",
-        num_qubits = 1, ) -> QuantumKernel:
+            iris_label_encoder=Pipeline([("reshape", reshaper), ("one hot", encoder)]),
+        )
+
+    def _construct_quantumkernel_classical_classifier(
+        self,
+        quantum_instance_name: str,
+        method="quantumclassical",
+        num_qubits=1,
+    ) -> QuantumKernel:
         """This method just create the matrix from the quantum kernel"""
-        kernelmatrix = self._construct_quantumkernel(num_qubits,
-                                                     quantum_instance_name, method)
+        kernelmatrix = self._construct_quantumkernel(num_qubits, quantum_instance_name, method)
         return kernelmatrix
-    def _construct_quantumkerneltrainer(self,
+
+    def _construct_quantumkerneltrainer(
+        self,
         quantum_instance_name: str,
         optimizer: Optional[Optimizer] = None,
         loss_function: str = None,
-        method = "quantum",
-        num_qubits = 1,) -> QuantumKernelTrainer:
+        method="quantum",
+        num_qubits=1,
+    ) -> QuantumKernelTrainer:
         """This method returns the quantumkerneltrainer"""
         kernel = self._construct_quantumkernel(num_qubits, quantum_instance_name, method)
-        qkt = QuantumKernelTrainer(quantum_kernel=kernel, loss=loss_function,
-                    optimizer = optimizer, initial_point=[np.pi / 2])
+        qkt = QuantumKernelTrainer(
+            quantum_kernel=kernel,
+            loss=loss_function,
+            optimizer=optimizer,
+            initial_point=[np.pi / 2],
+        )
         return qkt
+
     def _construct_quantumkernel(
         self,
         num_inputs: int,
@@ -66,8 +77,9 @@ class QKernelBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
         """Construct a QuantumKernel"""
         if method == "quantumclassical":
             feature_map = ZZFeatureMap(num_inputs, reps=2, entanglement="linear")
-            qkernel = QuantumKernel(feature_map=feature_map,
-            quantum_instance=self.backends[quantum_instance_name])
+            qkernel = QuantumKernel(
+                feature_map=feature_map, quantum_instance=self.backends[quantum_instance_name]
+            )
             return qkernel
         elif method == "quantum":
             user_params = ParameterVector("θ", 1)
@@ -76,9 +88,11 @@ class QKernelBaseClassifierBenchmark(BaseClassifierBenchmark, ABC):
                 fm0.ry(user_params[0], i)
             fm1 = ZZFeatureMap(num_inputs, reps=2, entanglement="linear")
             feature_map = fm0.compose(fm1)
-            qkernel = QuantumKernel(feature_map = feature_map,
-                    user_parameters=user_params,
-                    quantum_instance=self.backends[quantum_instance_name])
+            qkernel = QuantumKernel(
+                feature_map=feature_map,
+                user_parameters=user_params,
+                quantum_instance=self.backends[quantum_instance_name],
+            )
             return qkernel
         else:
             return ValueError(f"Unsupported method: {method}")

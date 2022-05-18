@@ -26,18 +26,21 @@ from .base_classifier_benchmark import DATASET_SYNTHETIC_CLASSIFICATION, DATASET
 
 from .qk_base_benchmark import QKernelBaseClassifierBenchmark
 
+
 class QKernelFitBenchmarks(QKernelBaseClassifierBenchmark):
     """QuantumKernel and QuantumKernelTraining fit benchmarks."""
+
     version = 2
     timeout = 1200.0
     params = [
         [DATASET_SYNTHETIC_CLASSIFICATION, DATASET_IRIS_CLASSIFICATION],
         ["qasm_simulator", "statevector_simulator"],
-        ["QuantumKernel", "QuantumKernelTraining" ],
+        ["QuantumKernel", "QuantumKernelTraining"],
         ["cobyla", "nelder-mead", "l-bfgs-b"],
         ["cross_entropy", "squared_error"],
     ]
     param_names = ["dataset", "backend name", "technique", "optimizer", "loss function"]
+
     def __init__(self) -> None:
         super().__init__()
         self.optimizers = {
@@ -62,37 +65,39 @@ class QKernelFitBenchmarks(QKernelBaseClassifierBenchmark):
         """Set up the benchmark."""
         self.train_features = self.datasets[dataset]["train_features"]
         self.train_labels = self.datasets[dataset]["train_labels"]
-        #new
+        # new
         n_qubits = self.train_features.shape[1]
         if tech == "QuantumKernel":
             self.model = self._construct_quantumkernel_classical_classifier(
-                                quantum_instance_name= quantum_instance_name,
-                                optimizer = optimizer,
-                                num_qubits = n_qubits)
+                quantum_instance_name=quantum_instance_name,
+                num_qubits=n_qubits,
+            )
         elif tech == "QuantumKernelTraining":
             self.model = self._construct_quantumkerneltrainer(
-                                quantum_instance_name= quantum_instance_name,
-                                optimizer= optimizer,
-                                loss_function = loss_function,
-                                num_qubits = n_qubits,
-                )
+                quantum_instance_name=quantum_instance_name,
+                optimizer=optimizer,
+                loss_function=loss_function,
+                num_qubits=n_qubits,
+            )
         else:
             raise ValueError(f"Unsupported technique: {tech}")
+
     # pylint: disable=invalid-name
     def time_fit_vqc(self, tech, _, __, ___, ____):
         """Time fitting VQC to data."""
         if tech == "QuantumKernel":
-            self.model = QSVC(kernel = self.model.evaluate)
-        #fit
+            self.model = QSVC(kernel=self.model.evaluate)
+        # fit
         self.model.fit(self.train_features, self.train_labels)
+
+
 if __name__ == "__main__":
     for dataset_name, backend_name, technique, optimizer_name, loss_function_name in product(
         *QKernelFitBenchmarks.params
     ):
         bench = QKernelFitBenchmarks()
         try:
-            bench.setup(dataset_name, technique, backend_name,
-                        optimizer_name, loss_function_name)
+            bench.setup(dataset_name, technique, backend_name, optimizer_name, loss_function_name)
         except NotImplementedError:
             continue
         for method in ["time_fit_vqc"]:
