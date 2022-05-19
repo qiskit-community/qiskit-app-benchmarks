@@ -11,10 +11,12 @@
 # that they have been altered from the originals.
 """Neural network regressor benchmarks."""
 
+from typing import Optional
 from itertools import product
 from timeit import timeit
 
 from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B, NELDER_MEAD
+from qiskit_machine_learning.algorithms import NeuralNetworkRegressor
 
 from .base_regressor_benchmark import (
     BaseRegressorBenchmark,
@@ -44,7 +46,7 @@ class OpflowQnnFitRegressorBenchmarks(BaseRegressorBenchmark):
         }
         self.train_features = None
         self.train_labels = None
-        self.model = None
+        self.model: Optional[NeuralNetworkRegressor] = None
 
     def setup(self, dataset: str, quantum_instance_name: str, optimizer: str):
         """Set up the benchmark."""
