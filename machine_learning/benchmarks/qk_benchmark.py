@@ -75,15 +75,19 @@ class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
             if dataset != DATASET_SYNTHETIC_CLASSIFICATION & dataset != DATASET_IRIS_CLASSIFICATION:
                 raise ValueError(f"Unsupported dataset: {dataset}")
             if technique == "QuantumKernel":
-                _kernel = self._construct_quantumkernel_classical_classifier(
-                    quantum_instance_name=backend, num_qubits=n_qubits
+                _kernel = QSVC(
+                    self._construct_quantumkernel_classical_classifier(
+                        quantum_instance_name=backend, num_qubits=n_qubits
+                    )
                 )
                 model = _kernel
             elif technique == "QuantumKernelTraining":
-                model = self._construct_quantumkerneltrainer(
-                    quantum_instance_name=backend,
-                    optimizer=COBYLA(maxiter=200),
-                    num_qubits=n_qubits,
+                model = QSVC(
+                    self._construct_quantumkerneltrainer(
+                        quantum_instance_name=backend,
+                        optimizer=COBYLA(maxiter=200),
+                        num_qubits=n_qubits,
+                    )
                 )
             else:
                 ValueError(f"Unsupported technique: {technique}")
@@ -95,29 +99,29 @@ class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
     # pylint: disable=invalid-name
     def time_score_vqc_classifier(self, _, __):
         """Time scoring VQC on data."""
-        QSVC(kernel=self.model).score(self.train_features, self.train_labels)
+        self.model.score(self.train_features, self.train_labels)
 
     def time_predict_vqc_classifier(self, _, __):
         """Time predicting with VQC."""
-        QSVC(kernel=self.model).predict(self.train_features)
+        self.model.predict(self.train_features)
 
     def track_accuracy_score_vqc_classifier(self, _, __):
         """Tracks the overall accuracy of the classification results."""
-        return QSVC(kernel=self.model).score(self.test_features, self.test_labels)
+        return self.model.score(self.test_features, self.test_labels)
 
     def track_precision_score_vqc_classifier(self, _, __):
         """Tracks the precision score."""
-        predicts = QSVC(kernel=self.model).predict(self.test_features)
+        predicts = self.model.predict(self.test_features)
         return precision_score(y_true=self.test_labels, y_pred=predicts, average="micro")
 
     def track_recall_score_vqc_classifier(self, _, __):
         """Tracks the recall score for each class of the classification results."""
-        predicts = QSVC(kernel=self.model).predict(self.test_features)
+        predicts = self.model.predict(self.test_features)
         return recall_score(y_true=self.test_labels, y_pred=predicts, average="micro")
 
     def track_f1_score_vqc_classifier(self, _, __):
         """Tracks the f1 score for each class of the classification results."""
-        predicts = QSVC(kernel=self.model).predict(self.test_features)
+        predicts = self.model.predict(self.test_features)
         return f1_score(y_true=self.test_labels, y_pred=predicts, average="micro")
 
 
