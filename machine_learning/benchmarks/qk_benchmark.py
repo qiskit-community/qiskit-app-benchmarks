@@ -53,12 +53,16 @@ class QKernelBenchmarks(QKernelBaseClassifierBenchmark):
         self.test_labels = self.datasets[dataset]["test_labels"]
         n_qubits = self.train_features.shape[1]
         if technique == "QuantumKernel":
-            self.model = self._construct_quantumkernel_classical_classifier(
-                quantum_instance_name=quantum_instance_name, num_qubits=n_qubits
+            self.model = QSVC(
+                self._construct_quantumkernel_classical_classifier(
+                    quantum_instance_name=quantum_instance_name, num_qubits=n_qubits
+                )
             )
         elif technique == "QuantumKernelTraining":
-            self.model = self._construct_quantumkerneltrainer(
-                quantum_instance_name=quantum_instance_name, num_qubits=n_qubits
+            self.model = QSVC(
+                self._construct_quantumkerneltrainer(
+                    quantum_instance_name=quantum_instance_name, num_qubits=n_qubits
+                )
             )
         else:
             raise ValueError(f"Unsupported technique: {technique}")
