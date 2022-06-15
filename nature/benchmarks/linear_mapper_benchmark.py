@@ -13,8 +13,8 @@
 """Linear Mapper Benchmarks."""
 from timeit import timeit
 
-import retworkx, networkx
-from qiskit_nature.mappers.second_quantization import LinearMapper
+import retworkx
+from qiskit_nature.mappers.second_quantization import LinearMapper, LogarithmicMapper
 from qiskit_nature.problems.second_quantization.lattice.models import IsingModel
 from qiskit_nature.problems.second_quantization.lattice import Lattice
 
@@ -26,11 +26,10 @@ class LinearMapperBenchmarks:
     param_names = ["op_number"]
 
     def setup_cache(self):
-        G = networkx.DiGraph()
-        H = networkx.path_graph(10)
-        G.add_nodes_from(H)
-        G.add_edges_from(H.edges)
-        lattice = Lattice(G)
+        graph = retworkx.PyGraph(multigraph=False)
+        graph.add_nodes_from(list(range(20)))
+        graph.add_edge(1, 5, 4)
+        lattice = Lattice(graph)
         ising_model = IsingModel(lattice)
         second_q_ops = ising_model.second_q_ops()
         # print(second_q_ops)
@@ -39,9 +38,11 @@ class LinearMapperBenchmarks:
     def setup(self, second_q_ops, op_number):
         self.second_q_ops = second_q_ops
         self.linear_mapper = LinearMapper()
+        # self.log_mapper = LogarithmicMapper()
 
     def time_map(self, _, __):
         return self.linear_mapper.map(self.second_q_ops)
+        # return self.log_mapper.map(self.second_q_ops)
 
 if __name__ == "__main__":
     bench = LinearMapperBenchmarks()

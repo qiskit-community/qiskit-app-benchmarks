@@ -18,12 +18,14 @@ import numpy as np
 from qiskit import Aer
 from qiskit.utils import QuantumInstance
 
-from qiskit_nature.mappers.second_quantization import JordanWignerMapper
+from qiskit_nature.mappers.second_quantization import JordanWignerMapper, ParityMapper
 from qiskit_nature.operators.second_quantization import FermionicOp
 
 from qiskit_nature.drivers import UnitsType
 from qiskit_nature.drivers.second_quantization import PySCFDriver
 from qiskit_nature.problems.second_quantization.electronic import ElectronicStructureProblem
+
+# pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
 
 class JordanWignerMapperBenchmarks:
     """Jordan Wigner Mapper Benchamrks"""
@@ -33,7 +35,7 @@ class JordanWignerMapperBenchmarks:
     param_names = ["op_number", "display_format"]
 
     def setup_cache(self):
-        _driver = PySCFDriver(atom='H .0 .0 .0; H .0 .0 0.735',
+        _driver = PySCFDriver(atom = "O 0.0 0.0 0.0; H 0.758602 0.0 0.504284; H 0.758602 0.0 -0.504284",
                               unit=UnitsType.ANGSTROM,
                               basis='sto3g')
         _problem = ElectronicStructureProblem(_driver)
@@ -43,14 +45,18 @@ class JordanWignerMapperBenchmarks:
     def setup(self, second_q_ops_list, op_number, display_format):
         self.second_q_ops_list = second_q_ops_list
         self.jw_mapper = JordanWignerMapper()
+        self.parity_mapper = ParityMapper()
 
     def time_map(self, _, op_number, __):
-        return self.jw_mapper.map(self.second_q_ops_list[op_number])
+        return self.parity_mapper.map(self.second_q_ops_list[op_number])
+        # return self.jw_mapper.map(self.second_q_ops_list[op_number])
+
 
 if __name__ == "__main__":
+    bench = JordanWignerMapperBenchmarks()
+    second_q_ops_list = bench.setup_cache()
     for op_number, display_format in product(*JordanWignerMapperBenchmarks.params):
         bench = JordanWignerMapperBenchmarks()
-        second_q_ops_list = bench.setup_cache()
         try:
             bench.setup(second_q_ops_list, op_number, display_format)
         except NotImplementedError:
