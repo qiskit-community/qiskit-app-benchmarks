@@ -45,11 +45,9 @@ class JordanWignerMapperBenchmarks:
     def setup(self, second_q_ops_list, op_number, display_format):
         self.second_q_ops_list = second_q_ops_list
         self.jw_mapper = JordanWignerMapper()
-        self.parity_mapper = ParityMapper()
 
     def time_map(self, _, op_number, __):
-        return self.parity_mapper.map(self.second_q_ops_list[op_number])
-        # return self.jw_mapper.map(self.second_q_ops_list[op_number])
+        return self.jw_mapper.map(self.second_q_ops_list[op_number])
 
 
 if __name__ == "__main__":
