@@ -32,17 +32,14 @@ class LinearMapperBenchmarks:
         lattice = Lattice(graph)
         ising_model = IsingModel(lattice)
         second_q_ops = ising_model.second_q_ops()
-        # print(second_q_ops)
         return second_q_ops
 
     def setup(self, second_q_ops, op_number):
         self.second_q_ops = second_q_ops
         self.linear_mapper = LinearMapper()
-        # self.log_mapper = LogarithmicMapper()
 
     def time_map(self, _, __):
         return self.linear_mapper.map(self.second_q_ops)
-        # return self.log_mapper.map(self.second_q_ops)
 
 if __name__ == "__main__":
     bench = LinearMapperBenchmarks()
