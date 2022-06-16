@@ -19,23 +19,29 @@ from qiskit_nature.operators.second_quantization import FermionicOp
 class FermionicOperatorBenchmarks:
     """Fermionic Operator Benchamrks"""
 
-    seed = 100
+    # seed = 100
     version = 1
     params = [[i for i in range(10)], ["dense", "sparse"]] # 3125
+    # params = [["I", "+", "-", "N", "E"], ["sparse", "dense"]]
     param_names = ["op_number", "display_format"]
 
     # params = [["I", "+", "-", "N", "E"], [np.random.randint(20)], ["sparse", "dense"]]
     # param_names = ["label", "register_length", "display_format"]
 
-    def setup_cache(self):
-        label_list = ["".join(label) for label in product(["I", "+", "-", "N", "E"], repeat=5)]  # Total number of labels produced is 3125.
-        return label_list
+    # def setup_cache(self):
+        # label_list = ["".join(label) for label in product(["I", "+", "-", "N", "E"], repeat=5)]  # Total number of labels produced is 3125.
+        # return label_list
 
-    def setup(self, label_list, op_number, display_format):
-        self.label_list = label_list
+    def setup(self, op_number, display_format):
+        self.label = ["I", "+", "-", "N", "E"]
 
-    def time_FermionicOp(self, _, op_number, display_format):
-        return FermionicOp(self.label_list[op_number], display_format)
+    def time_FermionicOp(self, label, display_format):
+        fermionic_op = FermionicOp(self.label, display_format)
+        return fermionic_op
+
+    def time_compose(self):
+        new_label = 
+
 
 if __name__ == "__main__":
     bench = FermionicOperatorBenchmarks()
