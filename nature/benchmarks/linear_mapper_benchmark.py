@@ -14,18 +14,22 @@
 from timeit import timeit
 
 import retworkx
-from qiskit_nature.mappers.second_quantization import LinearMapper, LogarithmicMapper
+from qiskit_nature.mappers.second_quantization import LinearMapper
 from qiskit_nature.problems.second_quantization.lattice.models import IsingModel
 from qiskit_nature.problems.second_quantization.lattice import Lattice
 
+# pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
+
+
 class LinearMapperBenchmarks:
-    """Linear Mapper Benchamrks"""
+    """Linear Mapper Benchmarks"""
 
     version = 1
     params = [0]
     param_names = ["op_number"]
 
     def setup_cache(self):
+        """setup cache"""
         graph = retworkx.PyGraph(multigraph=False)
         graph.add_nodes_from(list(range(20)))
         graph.add_edge(1, 5, 4)
@@ -34,12 +38,15 @@ class LinearMapperBenchmarks:
         second_q_ops = ising_model.second_q_ops()
         return second_q_ops
 
-    def setup(self, second_q_ops, op_number):
+    def setup(self, second_q_ops, __):
+        """setup"""
         self.second_q_ops = second_q_ops
         self.linear_mapper = LinearMapper()
 
     def time_map(self, _, __):
+        """time map"""
         return self.linear_mapper.map(self.second_q_ops)
+
 
 if __name__ == "__main__":
     bench = LinearMapperBenchmarks()
@@ -51,7 +58,7 @@ if __name__ == "__main__":
         except NotImplementedError:
             continue
 
-    for method in set(dir(LinearMapperBenchmarks)):
-        if method.startswith("time_"):
-            elapsed = timeit(f"bench.{method}", number = 10, globals = globals())
-            print(f"bench.{method} : \t{elapsed}")
+        for method in set(dir(LinearMapperBenchmarks)):
+            if method.startswith("time_"):
+                elapsed = timeit(f"bench.{method}(None, {op_number})", number=10, globals=globals())
+                print(f"bench.{method} : \t{elapsed}")
