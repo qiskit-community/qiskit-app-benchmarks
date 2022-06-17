@@ -1,6 +1,6 @@
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2021.
+# (C) Copyright IBM 2021, 2022.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -14,8 +14,6 @@
 from itertools import product
 from timeit import timeit
 
-from qiskit import Aer
-from qiskit.utils import QuantumInstance
 from qiskit_nature.problems.sampling.protein_folding import (
     PenaltyParameters,
     Peptide,
@@ -26,7 +24,7 @@ from qiskit_nature.problems.sampling.protein_folding import (
 )
 
 
-# pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
+# pylint: disable=redefined-outer-name, invalid-name
 
 
 class ProteinFoldingProblemBenchmarks:
@@ -40,27 +38,35 @@ class ProteinFoldingProblemBenchmarks:
     param_names = ["peptide", "interaction type"]
 
     def __init__(self):
-        self.peptides = {
-            "Neuropeptide": ("APRLRFY", [""] * 7),  #
-            "NeuropeptideDummySide": ("APRLRFY", ["", "", "R", "", "T", "W", ""]),
-            # Neuropeptide with dummy side chains
-            "Angiotensin": ("DRVYIHPFHL", [""] * 10),  # Angiotensin I, human
-            "AngiotensinDummySide": (
-                "DRVYIHPFHL",
-                ["", "", "P", "R", "L", "H", "Y", "", "I", ""],
-            ),
-        }  # Angiotensin I, human with dummy side chains
+        self.peptides = None
+        self.interactions = None
+        self.main_chain_residue_sequence = None
+        self.side_chain_residue_sequences = None
+        self.protein_folding_problem = None
 
-        self.interactions = {
-            "MiyazawaJerniganInteraction": MiyazawaJerniganInteraction(),
-            "RandomInteraction": RandomInteraction(),
-            "MixedInteraction": MixedInteraction(),
-        }
+    def _initialization(self):
+        if self.peptides is None:
+            self.peptides = {
+                "Neuropeptide": ("APRLRFY", [""] * 7),  #
+                "NeuropeptideDummySide": ("APRLRFY", ["", "", "R", "", "T", "W", ""]),
+                # Neuropeptide with dummy side chains
+                "Angiotensin": ("DRVYIHPFHL", [""] * 10),  # Angiotensin I, human
+                "AngiotensinDummySide": (
+                    "DRVYIHPFHL",
+                    ["", "", "P", "R", "L", "H", "Y", "", "I", ""],
+                ),
+            }  # Angiotensin I, human with dummy side chains
+
+        if self.interactions is None:
+            self.interactions = {
+                "MiyazawaJerniganInteraction": MiyazawaJerniganInteraction(),
+                "RandomInteraction": RandomInteraction(),
+                "MixedInteraction": MixedInteraction(),
+            }
 
     def setup(self, peptide_id, interaction_id):
         """setup"""
-        qasm_sim = Aer.get_backend("qasm_simulator")
-        self._qins = QuantumInstance(backend=qasm_sim, shots=1)
+        self._initialization()
         self.main_chain_residue_sequence = self.peptides[peptide_id][0]
         self.side_chain_residue_sequences = self.peptides[peptide_id][1]
         peptide = Peptide(self.main_chain_residue_sequence, self.side_chain_residue_sequences)
@@ -83,7 +89,6 @@ class ProteinFoldingProblemBenchmarks:
 
 
 if __name__ == "__main__":
-    protein_folding_problem_benchmarks = ProteinFoldingProblemBenchmarks()
     for peptide_id, interaction_id in product(*ProteinFoldingProblemBenchmarks.params):
         bench = ProteinFoldingProblemBenchmarks()
         try:
