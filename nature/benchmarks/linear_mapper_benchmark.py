@@ -11,6 +11,7 @@
 # that they have been altered from the originals.
 
 """Linear Mapper Benchmarks."""
+import numpy as np
 from timeit import timeit
 
 import retworkx
@@ -25,36 +26,48 @@ class LinearMapperBenchmarks:
     """Linear Mapper Benchmarks."""
 
     version = 1
-    params = [0]
+    seed = 100
+    params = list(range(3))
     param_names = ["op_number"]
 
     def setup_cache(self):
         """setup cache"""
-        graph = retworkx.PyGraph(multigraph=False)
-        graph.add_nodes_from(list(range(20)))
-        graph.add_edge(1, 5, 4)
-        lattice = Lattice(graph)
-        ising_model = IsingModel(lattice)
-        second_q_ops = ising_model.second_q_ops()
-        return second_q_ops
 
-    def setup(self, second_q_ops, __):
+        second_q_ops_list = []
+
+        for graph_num in range(3):
+            num_nodes = np.random.randint(40)
+            graph = retworkx.PyGraph(multigraph=False)
+            graph.add_nodes_from(list(range(num_nodes)))
+
+            for i in range(num_nodes):
+                for j in range(num_nodes):
+                    if j != i:
+                        graph.add_edge(i, j, np.random.randint(100))
+
+            lattice = Lattice(graph)
+            ising_model = IsingModel(lattice)
+            second_q_ops = ising_model.second_q_ops()
+            second_q_ops_list.append(second_q_ops)
+
+        return second_q_ops_list
+
+    def setup(self, second_q_ops_list, __):
         """setup"""
-        self.second_q_ops = second_q_ops
+        self.second_q_ops_list = second_q_ops_list
         self.linear_mapper = LinearMapper()
 
-    def time_map(self, _, __):
+    def time_map(self, _, op_number):
         """time map"""
-        return self.linear_mapper.map(self.second_q_ops)
-
+        return self.linear_mapper.map(self.second_q_ops_list[op_number])
 
 if __name__ == "__main__":
     bench = LinearMapperBenchmarks()
-    second_q_ops = bench.setup_cache()
+    second_q_ops_list = bench.setup_cache()
     for op_number in LinearMapperBenchmarks.params:
         bench = LinearMapperBenchmarks()
         try:
-            bench.setup(second_q_ops, op_number)
+            bench.setup(second_q_ops_list, op_number)
         except NotImplementedError:
             continue
 
