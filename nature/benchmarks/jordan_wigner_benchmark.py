@@ -25,7 +25,7 @@ from qiskit_nature.problems.second_quantization.electronic import ElectronicStru
 
 
 class JordanWignerMapperBenchmarks:
-    """Jordan Wigner Mapper Benchmarks"""
+    """Jordan-Wigner Mapper Benchmarks."""
 
     version = 1
     params: List[Union[List[int], List[str]]] = [list(range(7)), ["dense", "sparse"]]
