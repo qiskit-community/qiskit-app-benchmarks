@@ -22,7 +22,7 @@ from qiskit_nature.problems.second_quantization.lattice import Lattice
 
 
 class LinearMapperBenchmarks:
-    """Linear Mapper Benchmarks"""
+    """Linear Mapper Benchmarks."""
 
     version = 1
     params = [0]
