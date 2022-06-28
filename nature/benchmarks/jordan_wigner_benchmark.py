@@ -28,16 +28,24 @@ class JordanWignerMapperBenchmarks:
     """Jordan-Wigner Mapper Benchmarks."""
 
     version = 1
-    params: List[Union[List[int], List[str]]] = [list(range(7)), ["dense", "sparse"]]
+    params: List[Union[List[int], List[str]]] = [list(range(3 * 7)), ["dense", "sparse"]]
     param_names = ["op_number", "display_format"]
 
     def setup_cache(self):
         """setup cache"""
-        _driver = PySCFDriver(
-            atom="H .0 .0 .0; H .0 .0 0.735", unit=UnitsType.ANGSTROM, basis="sto3g"
-        )
-        _problem = ElectronicStructureProblem(_driver)
-        second_q_ops_list = _problem.second_q_ops()
+        atom_list = [
+            "H .0 .0 .0; H .0 .0 0.735",
+            "O 0.0 0.0 0.0; H 0.758602 0.0 0.504284; H 0.758602 0.0 -0.504284",
+            "Li 0.0 0.0 0.0; H 0.0 0.0 1.5474",
+        ]
+        second_q_ops_list = []
+        for num_atom in range(3):
+            _driver = PySCFDriver(atom=atom_list[num_atom], unit=UnitsType.ANGSTROM, basis="sto3g")
+            _problem = ElectronicStructureProblem(_driver)
+            second_q_ops_list.append(_problem.second_q_ops())
+            print(len(second_q_ops_list))
+
+        second_q_ops_list = [second_q_ops for atoms in second_q_ops_list for second_q_ops in atoms]
         return second_q_ops_list
 
     def setup(self, second_q_ops_list, _, __):

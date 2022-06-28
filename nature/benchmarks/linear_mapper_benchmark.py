@@ -11,8 +11,8 @@
 # that they have been altered from the originals.
 
 """Linear Mapper Benchmarks."""
-import numpy as np
 from timeit import timeit
+import numpy as np
 
 import retworkx
 from qiskit_nature.mappers.second_quantization import LinearMapper
@@ -35,7 +35,7 @@ class LinearMapperBenchmarks:
 
         second_q_ops_list = []
 
-        for graph_num in range(3):
+        for _ in range(3):
             num_nodes = np.random.randint(40)
             graph = retworkx.PyGraph(multigraph=False)
             graph.add_nodes_from(list(range(num_nodes)))
@@ -60,6 +60,7 @@ class LinearMapperBenchmarks:
     def time_map(self, _, op_number):
         """time map"""
         return self.linear_mapper.map(self.second_q_ops_list[op_number])
+
 
 if __name__ == "__main__":
     bench = LinearMapperBenchmarks()
