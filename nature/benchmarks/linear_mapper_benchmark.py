@@ -32,7 +32,6 @@ class LinearMapperBenchmarks:
     def setup_cache(self):
         """setup cache"""
 
-        np.random.seed(100)
         second_q_ops_list = []
         edge_arr = [
             24,
