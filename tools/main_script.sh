@@ -25,7 +25,15 @@ echo 'Remove previous python environment if it exists'
 rm -rf /tmp/benchmarks-env
 
 echo 'Create python environment'
-python3 -m venv /tmp/benchmarks-env
+env_retval=0
+python3.8 -m venv /tmp/benchmarks-env  && env_retval=$? || env_retval=$?
+if [ $env_retval -ne 0 ]; then
+  echo "Python environment creation failed. Error: $env_retval"
+  echo "End of $MAIN_BASENAME script."
+  return $env_retval
+else
+  echo 'Python environment creation succeeded.'
+fi
 
 echo 'Activate python environment'
 source /tmp/benchmarks-env/bin/activate
