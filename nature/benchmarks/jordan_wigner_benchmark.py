@@ -131,4 +131,3 @@ if __name__ == "__main__":
                         globals=globals(),
                     )
                     print(f"bench.{method} : \t{elapsed}")
-                continue

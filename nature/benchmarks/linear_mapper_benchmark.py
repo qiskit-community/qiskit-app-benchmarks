@@ -38,10 +38,8 @@ class LinearMapperBenchmarks:
             graph = retworkx.PyGraph(multigraph=False)
             graph.add_nodes_from(list(range(self.params[index])))
 
-            count = 0
             for i in range(self.params[index]):
                 for j in range(i + 1, self.params[index]):
-                    count += 1
                     graph.add_edge(i, j, edge_arr[i])
 
             lattice = Lattice(graph)
