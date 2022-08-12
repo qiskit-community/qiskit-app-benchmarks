@@ -1,0 +1,70 @@
+# This code is part of Qiskit.
+#
+# (C) Copyright IBM 2022.
+#
+# This code is licensed under the Apache License, Version 2.0. You may
+# obtain a copy of this license in the LICENSE.txt file in the root directory
+# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# Any modifications or derivative works of this code must retain this
+# copyright notice, and modified files need to carry a notice indicating
+# that they have been altered from the originals.
+
+name: 'Install Qiskit Application'
+description: 'Installs Qiskit Application from Main'
+inputs:
+  os:
+    description: 'OS'
+    required: true
+  python-version:
+    description: 'Python version'
+    required: true
+  application-name:
+    description: 'Application name'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Get main last commit id
+      run: |
+        echo "APPLICATION_HASH=$(git ls-remote --heads https://github.com/Qiskit/qiskit-${{ inputs.application-name }}.git refs/heads/main  | awk '{print $1}')" >> $GITHUB_ENV
+      shell: bash
+    - name: ${{ inputs.application-name }} Cache
+      env:
+        CACHE_VERSION: v1
+      id: application-cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ inputs.application-name }}-cache
+        key: ${{ inputs.application-name }}-${{ inputs.os }}-${{ inputs.python-version }}-${{ env.APPLICATION_HASH }}-${{ env.CACHE_VERSION }}
+    - name: Install ${{ inputs.application-name }} from Main
+      run: |
+        echo "Install ${{ inputs.application-name }} from Main"
+        BASE_DIR=${{ inputs.application-name }}-cache
+        build_from_main=true
+        cache_hit=${{ steps.application-cache.outputs.cache-hit }}
+        echo "cache hit: ${cache_hit}"
+        if [ "$cache_hit" == "true" ]; then
+          pip_result=0
+          pushd "${BASE_DIR}"
+          python -m pip install *.whl && pip_result=$? || pip_result=$?
+          popd
+          if [ $pip_result == 0 ]; then
+            build_from_main=false
+          fi
+        else
+          mkdir -p ${BASE_DIR}
+        fi
+        if [ "$build_from_main" == "true" ]; then
+          echo 'Create wheel file from main'
+          pip install -U wheel
+          git clone --depth 1 --branch main https://github.com/Qiskit/qiskit-${{ inputs.application-name }}.git /tmp/qiskit-${{ inputs.application-name }}
+          pushd /tmp/qiskit-${{ inputs.application-name }}
+          python setup.py bdist_wheel
+          popd
+          cp -rf /tmp/qiskit-${{ inputs.application-name }}/dist/*.whl "${BASE_DIR}"
+          pushd "${BASE_DIR}"
+          python -m pip install *.whl
+          popd
+        fi
+      shell: bash
