@@ -36,7 +36,7 @@ git clone https://github.com/Qiskit/qiskit-machine-learning.git ${ML_DIR}
 
 echo 'Run unit tests with tox'
 pushd ${ML_DIR}
-tox -e gpu-amd || true
+tox -e gpu || true
 popd
 
 echo 'Final cleanup'

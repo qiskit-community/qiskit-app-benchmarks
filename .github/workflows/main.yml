@@ -62,7 +62,39 @@ jobs:
         with:
           os: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
-      - uses: ./.github/actions/install-applications
+      - name: Install Optimization
+        uses: ./.github/actions/install-application
+        with:
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+          application-name: optimization
+      - name: Install Finance
+        uses: ./.github/actions/install-application
+        with:
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+          application-name: finance
+      - name: Install Machine Learning
+        uses: ./.github/actions/install-application
+        with:
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+          application-name: machine-learning
+      - name: Install Nature
+        uses: ./.github/actions/install-application
+        with:
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+          application-name: nature
+      - name: Install Extras
+        run: |
+          echo 'Install optimization extras'
+          pip install qiskit-optimization[cplex,cvx,matplotlib,gurobi]
+          echo 'Install machine learning extras'
+          pip install qiskit-machine-learning[torch,sparse]
+          echo 'Install nature extras'
+          pip install qiskit-nature[pyscf]
+        shell: bash
       - run:  pip check
         if: ${{ !cancelled() }}
         shell: bash
@@ -129,7 +161,7 @@ jobs:
           pushd ${{ matrix.domain }}
           if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
             asv machine --yes
-            asv update || true 
+            asv update || true
             asv run --quick --show-stderr
           fi
           popd
