@@ -25,6 +25,7 @@
 #
 import os
 import sys
+from datetime import date
 
 sys.path.append(os.path.abspath("."))
 
@@ -34,7 +35,9 @@ Sphinx documentation builder
 
 # -- Project information -----------------------------------------------------
 project = "Qiskit Application Benchmarks"
-copyright = "2021, Qiskit Development Team"  # pylint: disable=redefined-builtin
+copyright = (
+    f"2021, {date.today().year}, Qiskit Development Team"  # pylint: disable=redefined-builtin
+)
 author = "Qiskit Development Team"
 
 # -- General configuration ---------------------------------------------------
