@@ -24,7 +24,7 @@ on:
     - cron: '0 1 * * *'
 
 concurrency:
-  group: ${{ github.repository }}-${{ github.ref }}-${{ github.head_ref }}
+  group: ${{ github.repository }}-${{ github.ref }}-${{ github.head_ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:
@@ -37,12 +37,12 @@ jobs:
     steps:
       - name: Print Concurrency Group
         env:
-          CONCURRENCY_GROUP: ${{ github.repository }}-${{ github.ref }}-${{ github.head_ref }}
+          CONCURRENCY_GROUP: ${{ github.repository }}-${{ github.ref }}-${{ github.head_ref }}-${{ github.workflow }}
         run: |
           echo -e "\033[31;1;4mConcurrency Group\033[0m"
           echo -e "$CONCURRENCY_GROUP\n"
         shell: bash
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v3
@@ -128,7 +128,7 @@ jobs:
         if: ${{ !cancelled() }}
         shell: bash
       - name: Run upload documentation
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: documentation
           path: docs/_build/html/artifacts/documentation.tar.gz
@@ -142,7 +142,7 @@ jobs:
         python-version: [3.8]
         domain: ["finance", "machine_learning", "nature", "optimization"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
