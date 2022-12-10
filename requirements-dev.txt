@@ -8,4 +8,4 @@ asv
 virtualenv
 requests
 types-requests
-tox<4.0.0
+tox
