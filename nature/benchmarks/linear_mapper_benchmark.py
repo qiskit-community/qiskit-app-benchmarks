@@ -12,7 +12,7 @@
 
 """Linear Mapper Benchmarks."""
 from timeit import timeit
-import retworkx
+import rustworkx
 from qiskit_nature.mappers.second_quantization import LinearMapper
 from qiskit_nature.problems.second_quantization.lattice.models import IsingModel
 from qiskit_nature.problems.second_quantization.lattice import Lattice
@@ -35,7 +35,7 @@ class LinearMapperBenchmarks:
         edge_arr = list((n**11) % 100 for n in range(100))
 
         for index, _ in enumerate(self.params):
-            graph = retworkx.PyGraph(multigraph=False)
+            graph = rustworkx.PyGraph(multigraph=False)
             graph.add_nodes_from(list(range(self.params[index])))
 
             for i in range(self.params[index]):
