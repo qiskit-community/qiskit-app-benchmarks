@@ -3,11 +3,11 @@
 # least one codeowner. However, all Qiskit team members can (and should!) review the PRs.
 
 # Global rule, unless specialized by a later one
-* @stefan-woerner @manoelmarques @woodsp-ibm @dlasecki @ElePT @mrossinek
+* @stefan-woerner @manoelmarques @woodsp-ibm @ElePT @mrossinek
 
 # Application folders
-finance/           @stefan-woerner @manoelmarques @woodsp-ibm @dlasecki @ElePT @mrossinek
-machine_learning/  @stefan-woerner @manoelmarques @woodsp-ibm @dlasecki @ElePT @mrossinek @adekusar-drl
-nature/            @stefan-woerner @manoelmarques @woodsp-ibm @dlasecki @ElePT @mrossinek
-optimization/      @stefan-woerner @manoelmarques @woodsp-ibm @dlasecki @ElePT @mrossinek @t-imamichi
+finance/           @stefan-woerner @manoelmarques @woodsp-ibm @ElePT @mrossinek
+machine_learning/  @stefan-woerner @manoelmarques @woodsp-ibm @ElePT @mrossinek @adekusar-drl
+nature/            @stefan-woerner @manoelmarques @woodsp-ibm @ElePT @mrossinek
+optimization/      @stefan-woerner @manoelmarques @woodsp-ibm @ElePT @mrossinek @t-imamichi
 
