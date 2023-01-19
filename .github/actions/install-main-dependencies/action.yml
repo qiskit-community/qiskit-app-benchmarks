@@ -119,6 +119,7 @@ runs:
           echo 'Create wheel file from main'
           pip install -U wheel
           pushd /tmp/qiskit-aer
+          pip install -U "cmake!=3.17.1,!=3.17.0"
           pip install "scikit-build>=0.11.0"
           pip install pybind11
           if [ "${{ inputs.os }}" == "windows-2019" ]; then
