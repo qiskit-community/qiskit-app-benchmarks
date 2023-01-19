@@ -1,6 +1,6 @@
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2021, 2022.
+# (C) Copyright IBM 2021, 2023.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -50,6 +50,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
           cache-dependency-path: requirements-dev.txt
+      - uses: ./.github/actions/install-main-dependencies
+        with:
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
       - name: Install Dependencies
         run: |
           pip install -U -r requirements-dev.txt
@@ -58,10 +62,6 @@ jobs:
           sudo apt-get -y install hunspell-en-us
           pip install pyenchant
         shell: bash
-      - uses: ./.github/actions/install-main-dependencies
-        with:
-          os: ${{ matrix.os }}
-          python-version: ${{ matrix.python-version }}
       - name: Install Optimization
         uses: ./.github/actions/install-application
         with:
