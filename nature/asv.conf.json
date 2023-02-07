@@ -26,14 +26,17 @@
         "return-code=any python -c \"import shutil; shutil.rmtree('{build_dir}/qiskit_nature.egg-info')\"",
         "python -mpip install git+https://github.com/Qiskit/qiskit-terra",
         "python -mpip install git+https://github.com/Qiskit/qiskit-aer",
-        "python -mpip install {wheel_file}",
+        "python -mpip install setuptools<67.0.0",
+        "python -mpip install {wheel_file}"
     ],
     "uninstall_command": [
         "return-code=any python -mpip uninstall -y {project}",
-        "return-code=any python -mpip uninstall -y qiskit-aer qiskit-terra",
+        "return-code=any python -mpip uninstall -y qiskit-aer qiskit-terra"
     ],
     "build_command": [
-        "python setup.py build",
+        "python -mpip install -U wheel",
+        "python -mpip install setuptools<67.0.0",
+        "python setup.py bdist_wheel",
         "PIP_NO_BUILD_ISOLATION=false python -mpip wheel --no-deps --no-index -w {build_cache_dir} {build_dir}"
     ],
 
