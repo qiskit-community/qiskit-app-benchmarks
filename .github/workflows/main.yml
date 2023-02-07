@@ -150,7 +150,7 @@ jobs:
         run: |
           pushd ${{ matrix.domain }}
           if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
-            pip install -U asv virtualenv
+            pip install -U pip asv virtualenv
             # for qiskit-aer build under asv
             sudo apt-get -y install libopenblas-dev
           fi
@@ -161,8 +161,8 @@ jobs:
           pushd ${{ matrix.domain }}
           if [ -n "$(find benchmarks/* -not -name '__*' | head -1)" ]; then
             asv machine --yes
-            asv update || true
-            asv run --quick --show-stderr
+            asv update --verbose || true
+            asv run --quick --show-stderr --verbose
           fi
           popd
         shell: bash
