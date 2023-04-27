@@ -43,8 +43,8 @@ class VersionChecker:
 
             # Iterate through the modules
             fullname = package + "." + name
-            modspec = importlib.util.find_spec(fullname)
-            mod = importlib.util.module_from_spec(modspec)
+            modspec = importlib.util.find_spec(fullname)  # type: ignore[attr-defined]
+            mod = importlib.util.module_from_spec(modspec)  # type: ignore[attr-defined]
             modspec.loader.exec_module(mod)
             for _, cls in inspect.getmembers(mod, inspect.isclass):
                 # Iterate through the classes defined on the module.
