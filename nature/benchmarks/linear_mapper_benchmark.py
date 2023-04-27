@@ -26,7 +26,7 @@ settings.use_pauli_sum_op = False
 class LinearMapperBenchmarks:
     """Linear Mapper Benchmarks."""
 
-    version = 2
+    version = 1
     timeout = 120.0
     params = [50, 80, 100]
     param_names = ["Number of nodes"]

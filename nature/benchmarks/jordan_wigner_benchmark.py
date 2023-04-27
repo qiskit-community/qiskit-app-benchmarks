@@ -31,7 +31,7 @@ settings.use_pauli_sum_op = False
 class JordanWignerMapperBenchmarks:
     """Jordan-Wigner Mapper Benchmarks."""
 
-    version = 2
+    version = 1
     params: List[str] = [
         "H2 ElectronicEnergy",
         "H2 AngularMomentum",
