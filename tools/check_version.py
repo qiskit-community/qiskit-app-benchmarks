@@ -1,6 +1,6 @@
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2021, 2022.
+# (C) Copyright IBM 2021, 2023.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -43,8 +43,8 @@ class VersionChecker:
 
             # Iterate through the modules
             fullname = package + "." + name
-            modspec = importlib.util.find_spec(fullname)
-            mod = importlib.util.module_from_spec(modspec)
+            modspec = importlib.util.find_spec(fullname)  # type: ignore[attr-defined]
+            mod = importlib.util.module_from_spec(modspec)  # type: ignore[attr-defined]
             modspec.loader.exec_module(mod)
             for _, cls in inspect.getmembers(mod, inspect.isclass):
                 # Iterate through the classes defined on the module.

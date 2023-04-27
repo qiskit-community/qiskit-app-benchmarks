@@ -1,6 +1,6 @@
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2022.
+# (C) Copyright IBM 2022, 2023.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -15,13 +15,15 @@ import argparse
 from typing import List
 from timeit import timeit
 from pathlib import Path
-from qiskit_nature import settings
-from qiskit_nature.hdf5 import save_to_hdf5
-from qiskit_nature.drivers import UnitsType
-from qiskit_nature.drivers.second_quantization import PySCFDriver, HDF5Driver
-from qiskit_nature.mappers.second_quantization import JordanWignerMapper
+import h5py
+from qiskit_nature.second_q.drivers import PySCFDriver
+from qiskit_nature.second_q.formats.qcschema import QCSchema
+from qiskit_nature.second_q.formats import qcschema_to_problem
+from qiskit_nature.second_q.mappers import JordanWignerMapper
+from qiskit_nature.settings import settings
+from qiskit_nature.units import DistanceUnit
 
-settings.dict_aux_operators = True
+settings.use_pauli_sum_op = False
 
 # pylint: disable=redefined-outer-name, invalid-name, attribute-defined-outside-init
 
@@ -31,27 +33,27 @@ class JordanWignerMapperBenchmarks:
 
     version = 1
     params: List[str] = [
-        "H2 ParticleNumber",
         "H2 ElectronicEnergy",
-        "H2 DipoleMomentX",
-        "H2 DipoleMomentY",
-        "H2 DipoleMomentZ",
         "H2 AngularMomentum",
         "H2 Magnetization",
-        "H2O ParticleNumber",
+        "H2 ParticleNumber",
+        "H2 XDipole",
+        "H2 YDipole",
+        "H2 ZDipole",
         "H2O ElectronicEnergy",
-        "H2O DipoleMomentX",
-        "H2O DipoleMomentY",
-        "H2O DipoleMomentZ",
         "H2O AngularMomentum",
         "H2O Magnetization",
-        "LiH ParticleNumber",
+        "H2O ParticleNumber",
+        "H2O XDipole",
+        "H2O YDipole",
+        "H2O ZDipole",
         "LiH ElectronicEnergy",
-        "LiH DipoleMomentX",
-        "LiH DipoleMomentY",
-        "LiH DipoleMomentZ",
         "LiH AngularMomentum",
         "LiH Magnetization",
+        "LiH ParticleNumber",
+        "LiH XDipole",
+        "LiH YDipole",
+        "LiH ZDipole",
     ]
     param_names = ["operator_type"]
 
@@ -71,11 +73,13 @@ class JordanWignerMapperBenchmarks:
         for _, (atom, file_name) in enumerate(JordanWignerMapperBenchmarks._hdf5_files):
             _driver = PySCFDriver(
                 atom=atom,
-                unit=UnitsType.ANGSTROM,
+                unit=DistanceUnit.ANGSTROM,
                 basis="sto3g",
             )
-            _molecule = _driver.run()
-            save_to_hdf5(_molecule, file_name, replace=True)
+            _driver.run_pyscf()
+            _qcschema = _driver.to_qcschema(include_dipole=True)
+            with h5py.File(file_name, "w") as file:
+                _qcschema.to_hdf5(file)
 
     def setup_cache(self):
         """setup cache"""
@@ -85,10 +89,11 @@ class JordanWignerMapperBenchmarks:
         second_q_ops_list = []
         for _, file_name in JordanWignerMapperBenchmarks._hdf5_files:
             file_path = Path(source_dir, file_name)
-            _hdf5_driver = HDF5Driver(file_path.resolve())
-            _molecule = _hdf5_driver.run()
-            atom_ops_list = list(_molecule.second_q_ops().values())
-            for item in atom_ops_list:
+            _qcschema = QCSchema.from_hdf5(file_path)
+            _problem = qcschema_to_problem(_qcschema)
+            hamil, aux_ops = _problem.second_q_ops()
+            second_q_ops_list.append(hamil)
+            for _, item in sorted(aux_ops.items()):
                 second_q_ops_list.append(item)
 
         return second_q_ops_list
